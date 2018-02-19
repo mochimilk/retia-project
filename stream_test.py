@@ -51,7 +51,7 @@ def self_check(u_name):
 
 
 def is_babu(content: str) -> bool:
-    return bool(re.search(r"ママー+[ッ|!|！]", content))
+    return bool(re.search(r"ママー+[ッ!！]", content))
 
 #バ部は廃部
 def babu_haibu(converted_text):
