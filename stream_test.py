@@ -65,10 +65,13 @@ def babu_haibu(content):
     return toot_string
 
 
+def is_kiite(content: str):
+    return re.search(r"(ヒトカラ)|(お(ねえ|姉|ねー)ちゃん)|(可愛い女の子)", content)
+
 #〇〇と聞いて
 def to_kiite(content):
     toot_string = ''
-    mKiite = re.search(r"(ヒトカラ)|(お(ねえ|姉|ねー)ちゃん)|(可愛い女の子)", content)
+    mKiite = is_kiite(content)
     #if self_check(MyUserName):
     #    print('KIITECK: ERR: 自分のトゥーに反応')
     #    toot_string = ''
