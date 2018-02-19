@@ -51,9 +51,9 @@ def self_check(u_name):
 
 
 #バ部は廃部
-def babu_haibu(context):
+def babu_haibu(content):
     toot_string = ''
-    if re.search(r"ママー+[ッ|!|！]", context):
+    if re.search(r"ママー+[ッ|!|！]", content):
         print('BBCK: 廃部')
         toot_string = 'みや「バ部は廃部」 #test'
     else:
@@ -63,9 +63,9 @@ def babu_haibu(context):
 
 
 #〇〇と聞いて
-def to_kiite(context):
+def to_kiite(content):
     toot_string = ''
-    mKiite = re.search(r"(ヒトカラ)|(お(ねえ|姉|ねー)ちゃん)|(可愛い女の子)", context)
+    mKiite = re.search(r"(ヒトカラ)|(お(ねえ|姉|ねー)ちゃん)|(可愛い女の子)", content)
     #if self_check(MyUserName):
     #    print('KIITECK: ERR: 自分のトゥーに反応')
     #    toot_string = ''
