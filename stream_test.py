@@ -54,9 +54,9 @@ def is_babu(content: str) -> bool:
     return bool(re.search(r"ママー+[ッ|!|！]", content))
 
 #バ部は廃部
-def babu_haibu(content):
+def babu_haibu(context):
     toot_string = ''
-    if is_babu(content):
+    if is_babu(context):
         print('BBCK: 廃部')
         toot_string = 'みや「バ部は廃部」 #test'
     else:
@@ -69,9 +69,9 @@ def is_kiite(content: str):
     return re.search(r"(ヒトカラ)|(お(ねえ|姉|ねー)ちゃん)|(可愛い女の子)", content)
 
 #〇〇と聞いて
-def to_kiite(content):
+def to_kiite(context):
     toot_string = ''
-    mKiite = is_kiite(content)
+    mKiite = is_kiite(context)
     #if self_check(MyUserName):
     #    print('KIITECK: ERR: 自分のトゥーに反応')
     #    toot_string = ''
