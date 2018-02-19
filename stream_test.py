@@ -5,12 +5,7 @@ from numpy import *
 from numpy.random import *
 
 
-mastodon = Mastodon(
-    client_id="XXXXX.txt",
-    access_token="XXXXX.txt",
-    api_base_url = "https://mstdn-workers.com"
-)
-
+global mastodon
 MyUserName = 'XXXXX' #このユーザーのトゥーには反応しない
 
 #重複チェック
@@ -145,5 +140,12 @@ class MyStreamListener(StreamListener):
         print('DELETE')
         pass
 
-listener = MyStreamListener()
-mastodon.stream_local(listener)
+if __name__ == '__main__':
+    mastodon = Mastodon(
+        client_id="XXXXX.txt",
+        access_token="XXXXX.txt",
+        api_base_url = "https://mstdn-workers.com"
+    )
+
+    listener = MyStreamListener()
+    mastodon.stream_local(listener)
