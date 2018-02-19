@@ -5,12 +5,7 @@ from numpy import *
 from numpy.random import *
 
 
-mastodon = Mastodon(
-    client_id="XXXXX.txt",
-    access_token="XXXXX.txt",
-    api_base_url = "https://mstdn-workers.com"
-)
-
+global mastodon
 MyUserName = 'XXXXX' #このユーザーのトゥーには反応しない
 
 #重複チェック
@@ -55,10 +50,13 @@ def self_check(u_name):
     return selfCK
 
 
+def is_babu(content: str) -> bool:
+    return bool(re.search(r"ママー+[ッ!！]", content))
+
 #バ部は廃部
-def babu_haibu(context):
+def babu_haibu(converted_text):
     toot_string = ''
-    if re.search(r"ママー+[ッ|!|！]", context):
+    if is_babu(converted_text):
         print('BBCK: 廃部')
         toot_string = 'みや「バ部は廃部」 #test'
     else:
@@ -67,10 +65,13 @@ def babu_haibu(context):
     return toot_string
 
 
+def is_kiite(content: str):
+    return re.search(r"(ヒトカラ)|(お(ねえ|姉|ねー)ちゃん)|(可愛い女の子)", content)
+
 #〇〇と聞いて
-def to_kiite(context):
+def to_kiite(converted_text):
     toot_string = ''
-    mKiite = re.search(r"(ヒトカラ)|(お(ねえ|姉|ねー)ちゃん)|(可愛い女の子)", context)
+    mKiite = is_kiite(converted_text)
     #if self_check(MyUserName):
     #    print('KIITECK: ERR: 自分のトゥーに反応')
     #    toot_string = ''
@@ -145,5 +146,12 @@ class MyStreamListener(StreamListener):
         print('DELETE')
         pass
 
-listener = MyStreamListener()
-mastodon.stream_local(listener)
+if __name__ == '__main__':
+    mastodon = Mastodon(
+        client_id="XXXXX.txt",
+        access_token="XXXXX.txt",
+        api_base_url = "https://mstdn-workers.com"
+    )
+
+    listener = MyStreamListener()
+    mastodon.stream_local(listener)
