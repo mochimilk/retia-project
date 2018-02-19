@@ -50,10 +50,13 @@ def self_check(u_name):
     return selfCK
 
 
+def is_babu(content: str) -> bool:
+    return bool(re.search(r"ママー+[ッ|!|！]", content))
+
 #バ部は廃部
 def babu_haibu(content):
     toot_string = ''
-    if re.search(r"ママー+[ッ|!|！]", content):
+    if is_babu(content):
         print('BBCK: 廃部')
         toot_string = 'みや「バ部は廃部」 #test'
     else:
