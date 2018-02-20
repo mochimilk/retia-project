@@ -13,6 +13,7 @@ def toot_check(tooo, lim=3):
     my_dict = mastodon.account_verify_credentials()
     my_toots = mastodon.account_statuses(my_dict['id'], limit=lim)
 
+    """
     conv = re.compile(r"<[^>]*?>")
     my_toots0 = conv.sub("", my_toots[0]['content'])
     my_toots1 = conv.sub("", my_toots[1]['content'])
@@ -24,20 +25,19 @@ def toot_check(tooo, lim=3):
     else:
         ckt = False
     return ckt
-
     """
+
     i = 0
     ckt = False
+    conv = re.compile(r"<[^>]*?>")
     while i < lim:
-        conv = re.compile(r"<[^>]*?>")
-        my_toots0 = conv.sub("", my_toots[0]['content'])
+        my_toots0 = conv.sub("", my_toots[i]['content'])
         if tooo == my_toots0:
             ckt = True
             return ckt
             break
         i += 1
     return ckt
-    """
 
 
 #自分に反応しない
