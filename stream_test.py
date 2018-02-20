@@ -6,7 +6,7 @@ from numpy.random import *
 
 
 global mastodon
-MyUserName = 'XXXXX' #このユーザーのトゥーには反応しない
+MyUserName = 'v_idol_retia' #このユーザーのトゥーには反応しない
 
 #重複チェック
 def toot_check(tooo, lim=3):
@@ -58,7 +58,7 @@ def babu_haibu(converted_text):
     toot_string = ''
     if is_babu(converted_text):
         print('BBCK: 廃部')
-        toot_string = 'みや「バ部は廃部」 #test'
+        toot_string = 'バ部は廃部　#れてぃあたん'
     else:
         print('BBCK: No Babu')
         toot_string = ''
@@ -66,7 +66,7 @@ def babu_haibu(converted_text):
 
 
 def is_kiite(content: str):
-    return re.search(r"(ヒトカラ)|(お(ねえ|姉|ねー)ちゃん)|(可愛い女の子)", content)
+    return re.search(r"(ヒトカラ)|(お(ねえ|姉|ねー)ちゃん)|((可愛い|かわいい)女の子)|(彼女.*(ほ|欲)しい)", content)
 
 #〇〇と聞いて
 def to_kiite(converted_text):
@@ -78,7 +78,7 @@ def to_kiite(converted_text):
     #elif mKiite:
     if mKiite:
         print('KIITECK: 聞こえた')
-        toot_string = 'みや「' + mKiite.group() + 'と聞いて」 #test'
+        toot_string = mKiite.group() + 'と聞いて　#れてぃあたん'
     else:
         print('KIITECK: No Match')
         toot_string = ''
