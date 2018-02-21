@@ -84,7 +84,7 @@ def retia_tan(converted_text):
 
 
 def is_kiite(content: str):
-    return re.search(r"(?|(カラオケ)|(ヒトカラ)|(メイド)|(お[ね姉][えー]*ちゃん)|([可か][愛わ]い*[女男]の[子娘])|(彼女.*[ほ欲]しい))", content)
+    return re.search(r"((カラオケ)|(ヒトカラ)|(メイド)|(お[ね姉][えー]*ちゃん)|([可か][愛わ]い*[女男]の[子娘])|(彼女.*[ほ欲]しい))", content)
 
 #〇〇と聞いて
 def to_kiite(converted_text):
@@ -103,7 +103,7 @@ def to_kiite(converted_text):
     return toot_string
 
 def is_kawaii(content: str) -> bool:
-    return bool(re.search(r"(?|.+[とき|時].+るから|(おしゅし)|([ただ]けどね.?？)|(なんちゃって)|(ましゅ.))", content))
+    return bool(re.search(r"(.+[とき|時].+るから|(おしゅし)|([ただ]けどね.?？)|(なんちゃって)|(ましゅ.))", content))
 
 #〇〇さんかわいい
 def oo_kawaii(converted_text, usr_name):
