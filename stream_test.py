@@ -65,8 +65,26 @@ def babu_haibu(converted_text):
     return toot_string
 
 
+def is_retia(content: str) -> bool:
+    return bool(re.search(r"れてぃあたん", content))
+
+#れてぃあたん
+def retia_tan(converted_text):
+    toot_string = ''
+    if self_check(MyUserName):
+        print('MYCK: ERR: 自分のトゥーに反応')
+        toot_string = ''
+    elif is_retia(converted_text):
+        print('MYCK: 呼んだ？')
+        toot_string = '呼んだ？　#れてぃあたん'
+    else:
+        print('MYCK: No Retia')
+        toot_string = ''
+    return toot_string
+
+
 def is_kiite(content: str):
-    return re.search(r"(ヒトカラ)|(お(ねえ|姉|ねー)ちゃん)|((可愛い|かわいい)女の子)|(彼女.*(ほ|欲)しい)", content)
+    return re.search(r"(?|(カラオケ)|(ヒトカラ)|(メイド)|(お[ね姉][えー]*ちゃん)|([可か][愛わ]い*[女男]の[子娘])|(彼女.*[ほ欲]しい))", content)
 
 #〇〇と聞いて
 def to_kiite(converted_text):
@@ -81,6 +99,20 @@ def to_kiite(converted_text):
         toot_string = mKiite.group() + 'と聞いて　#れてぃあたん'
     else:
         print('KIITECK: No Match')
+        toot_string = ''
+    return toot_string
+
+def is_kawaii(content: str) -> bool:
+    return bool(re.search(r"(?|.+[とき|時].+るから|(おしゅし)|([ただ]けどね.?？)|(なんちゃって)|(ましゅ.))", content))
+
+#〇〇さんかわいい
+def oo_kawaii(converted_text, usr_name):
+    toot_string = ''
+    if is_kawaii(converted_text):
+        print('KWIICK: かわいい')
+        toot_string = usr_name + 'さんかわいい　#れてぃあたん'
+    else:
+        print('KWIICK: No Sweetie')
         toot_string = ''
     return toot_string
 
@@ -120,8 +152,13 @@ class MyStreamListener(StreamListener):
         #トゥー生成
         if babu_haibu(tl_cont) != '':
             my_next_toot = babu_haibu(tl_cont)
+        elif retia_tan(tl_cont) != '':
+            my_next_toot = retia_tan(tl_cont)
         elif to_kiite(tl_cont) != '':
             my_next_toot = to_kiite(tl_cont)
+        elif oo_kawaii(tl_cont, tl[0]['account']['display_name']) != '':
+            my_next_toot = oo_kawaii(tl_cont, tl[0]['account']['display_name'])
+
 
 
         #生成した内容が過去トゥーと一致したらトゥーしない
