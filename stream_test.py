@@ -72,13 +72,13 @@ def is_retia(content: str) -> bool:
 def retia_tan(converted_text):
     toot_string = ''
     if self_check(MyUserName):
-        print('MYCK: ERR: 自分のトゥーに反応')
+        print('RetiaCK: ERR: 自分のトゥーに反応')
         toot_string = ''
     elif is_retia(converted_text):
-        print('MYCK: 呼んだ？')
+        print('RetiaCK: 呼んだ？')
         toot_string = '呼んだ？　#れてぃあたん'
     else:
-        print('MYCK: No Retia')
+        print('RetiaCK: No Retia')
         toot_string = ''
     return toot_string
 
@@ -90,30 +90,34 @@ def is_kiite(content: str):
 def to_kiite(converted_text):
     toot_string = ''
     mKiite = is_kiite(converted_text)
-    #if self_check(MyUserName):
-    #    print('KIITECK: ERR: 自分のトゥーに反応')
-    #    toot_string = ''
-    #elif mKiite:
-    if mKiite:
-        print('KIITECK: 聞こえた')
+    if self_check(MyUserName):
+        print('KiiteCK: ERR: 自分のトゥーに反応')
+        toot_string = ''
+    elif mKiite:
+    #if mKiite:
+        print('KiiteCK: 聞こえた')
         toot_string = mKiite.group() + 'と聞いて　#れてぃあたん'
     else:
-        print('KIITECK: No Match')
+        print('KiiteCK: No Match')
         toot_string = ''
     return toot_string
 
 
 def is_kawaii(content: str) -> bool:
-    return bool(re.search(r"(.+[とき|時].+るから|(おしゅし)|([ただ]けどね.?？)|(なんちゃって)|(ましゅ.))", content))
+    return bool(re.search(r"(.+[とき|時].+るから|(おしゅし)|([ただ]けどね.?？)|(なんちゃって)|(ましゅ.)|.+(しゅき))", content))
 
 #〇〇さんかわいい
 def oo_kawaii(converted_text, usr_name):
     toot_string = ''
-    if is_kawaii(converted_text):
-        print('KWIICK: かわいい')
+    if self_check(MyUserName):
+        print('KawaiiCK: ERR: 自分のトゥーに反応')
+        toot_string = ''
+    elif is_kawaii(converted_text):
+    #if is_kawaii(converted_text):
+        print('KawaiiCK: かわいい')
         toot_string = usr_name + 'さんかわいい☆　#れてぃあたん'
     else:
-        print('KWIICK: No Sweetie')
+        print('KawaiiCK: No Sweetie')
         toot_string = ''
     return toot_string
 
@@ -182,6 +186,7 @@ class MyStreamListener(StreamListener):
         #self.logger.info(f"status delete_event: {status_id}")
         print(f"status delete_event: {status_id}")
         pass
+
 
 if __name__ == '__main__':
     mastodon = Mastodon(
