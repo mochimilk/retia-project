@@ -128,14 +128,12 @@ class MyStreamListener(StreamListener):
         super(MyStreamListener, self).__init__()
         #self.logger = logging.getLogger(self.__class__.__name__)
 
-
     def handle_stream(self, response):
         try:
             super().handle_stream(response)
         except:
             # do something
             raise
-
 
     def on_update(self, status):
         #self.logger.info(status_info_string(status))
@@ -164,7 +162,6 @@ class MyStreamListener(StreamListener):
         elif oo_kawaii(tl_cont, tl[0]['account']['display_name']) != '':
             my_next_toot = oo_kawaii(tl_cont, tl[0]['account']['display_name'])
 
-
         #生成した内容が過去トゥーと一致したらトゥーしない
         #何も生成してない場合もトゥーしない
         print('Next:', my_next_toot)
@@ -186,7 +183,6 @@ class MyStreamListener(StreamListener):
         #self.logger.info(f"status delete_event: {status_id}")
         print(f"status delete_event: {status_id}")
         pass
-
 
 if __name__ == '__main__':
     mastodon = Mastodon(
