@@ -84,7 +84,7 @@ def retia_tan(converted_text):
 
 
 def is_kiite(content: str):
-    return re.search(r"((カラオケ)|(ヒトカラ)|(メイド)|(お[ね姉][えー]*ちゃん)|([可か][愛わ]い*[女男]の[子娘])|(彼女.*[ほ欲]しい))", content)
+    return re.search(r"(カラオケ)|(ヒトカラ)|(メイド)|(お[ね姉][えー]*ちゃん)|((?:可愛い|かわいい)[女男]の[子娘])|(彼女.*[ほ欲]しい)", content)
 
 #〇〇と聞いて
 def to_kiite(converted_text):
