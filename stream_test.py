@@ -29,7 +29,7 @@ def toot_check(tooo, lim=3):
 
     i = 0
     ckt = False
-    while i < lim:
+    while i < lim + 1:
         #tag_cutter = re.compile(r"<[^>]*?>")
         my_toots0 = tag_cutter.sub("", my_toots[0]['content'])
         if tooo == my_toots0:
@@ -50,10 +50,10 @@ def self_check(my_name):
     return selfCK
 
 
+#バ部は廃部
 def is_babu(content: str) -> bool:
     return bool(re.search(r"ママー+[ッ!！]", content))
 
-#バ部は廃部
 def babu_haibu(converted_text):
     toot_string = ''
     if is_babu(converted_text):
@@ -65,10 +65,10 @@ def babu_haibu(converted_text):
     return toot_string
 
 
+#れてぃあたん
 def is_retia(content: str) -> bool:
     return bool(re.search(r"れてぃあたん", content))
 
-#れてぃあたん
 def retia_tan(converted_text):
     toot_string = ''
     if self_check(MyUserName):
@@ -83,10 +83,10 @@ def retia_tan(converted_text):
     return toot_string
 
 
+#〇〇と聞いて
 def is_kiite(content: str):
     return re.search(r"(カラオケ)|(ヒトカラ)|(メイド)|(お[ね姉][えー]*ちゃん)|((?:可愛い|かわいい)[女男]の[子娘])|(彼女.*[ほ欲]しい)", content)
 
-#〇〇と聞いて
 def to_kiite(converted_text):
     toot_string = ''
     mKiite = is_kiite(converted_text)
@@ -103,10 +103,10 @@ def to_kiite(converted_text):
     return toot_string
 
 
-def is_kawaii(content: str) -> bool:
-    return bool(re.search(r"(.+[とき|時].+るから|(おしゅし)|([ただ]けどね.?？)|(なんちゃって)|(ましゅ.)|.+(しゅき))", content))
-
 #〇〇さんかわいい
+def is_kawaii(content: str) -> bool:
+    return bool(re.search(r"(.+(?:とき|時).+るから|(おしゅし)|((?:た|だ)けどね.?？$)|(なんちゃって.?$)|.+(ましゅ.+)$|.+(しゅき).*)", content))
+
 def oo_kawaii(converted_text, usr_name):
     toot_string = ''
     if self_check(MyUserName):
@@ -122,11 +122,30 @@ def oo_kawaii(converted_text, usr_name):
     return toot_string
 
 
+#れてぃあたんかわいい⇒〇〇さん大好き
+def is_retikawa(content: str) -> bool:
+    return bool(re.search(r"(れてぃあたん(?:かわいい|可愛い))", content))
+
+def oo_retikawa(converted_text, usr_name):
+    toot_string = ''
+    if self_check(MyUserName):
+        print('RetiKawaCK: ERR: 自分のトゥーに反応')
+        toot_string = ''
+    elif is_retikawa(converted_text):
+    #if is_retikawa(converted_text):
+        print('RetiKawaCK: かわいい')
+        toot_string = usr_name + 'さん大好き☆　#れてぃあたん'
+    else:
+        print('RetiKawaCK: Zenzen Sweetie Janai')
+        toot_string = ''
+    return toot_string
+
+
 #ストリーム取得して実際に何かするところ
 class MyStreamListener(StreamListener):
     def __init__(self):
         super(MyStreamListener, self).__init__()
-        #self.logger = logging.getLogger(self.__class__.__name__)
+
 
     def handle_stream(self, response):
         try:
@@ -135,10 +154,11 @@ class MyStreamListener(StreamListener):
             # do something
             raise
 
+
     def on_update(self, status):
-        #self.logger.info(status_info_string(status))
         #tag_cutter = re.compile(r"<[^>]*?>")
-        tl = mastodon.timeline(timeline='local', limit=1, max_id=None)
+        #tl = mastodon.timeline(timeline='local', limit=1, max_id=None)
+        tl = [status]
         tl_cont = tag_cutter.sub("", tl[0]['content'])
 
         print("{},{:%Y-%m-%d %H:%M:%S}/{}/{}".format(
@@ -161,6 +181,9 @@ class MyStreamListener(StreamListener):
             my_next_toot = to_kiite(tl_cont)
         elif oo_kawaii(tl_cont, tl[0]['account']['display_name']) != '':
             my_next_toot = oo_kawaii(tl_cont, tl[0]['account']['display_name'])
+        elif oo_retikawa(tl_cont, tl[0]['account']['display_name']) != '':
+            my_next_toot = oo_retikawa(tl_cont, tl[0]['account']['display_name'])
+
 
         #生成した内容が過去トゥーと一致したらトゥーしない
         #何も生成してない場合もトゥーしない
@@ -174,7 +197,6 @@ class MyStreamListener(StreamListener):
             my_next_toot = ''
         else:
             print('TOOT:',my_next_toot)
-            #mastodon.toot(my_next_toot)
             mastodon.status_post(status = my_next_toot)
 
         pass
