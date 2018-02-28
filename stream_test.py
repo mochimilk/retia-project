@@ -4,40 +4,48 @@ import re
 import random
 
 global mastodon
+
 MyUserName = 'v_idol_retia' #このユーザーのトゥー稿には反応しない
 tag_cutter = re.compile(r"<[^>]*?>") #htmlタグ許すまじ
 display_name_cutter = re.compile(r"(?:@|#|http.*:\/\/)") #display_nameでのいたずら防止
+tl_list = [] #重複チェック用キャッシュ
 
 
 # 過去の投稿との重複チェック（連投防止）
-def toot_check(tooo, lim=3):
+#def toot_check(tooo, lim=3):
+def toot_check(tooo, t_list, lim=3):
+    """
     my_dict = mastodon.account_verify_credentials()
     my_toots = mastodon.account_statuses(my_dict['id'], limit=lim)
-
-    """
+    
     my_toots0 = tag_cutter.sub("", my_toots[0]['content'])
     my_toots1 = tag_cutter.sub("", my_toots[1]['content'])
     my_toots2 = tag_cutter.sub("", my_toots[2]['content'])
     cklist = [my_toots0, my_toots1, my_toots2]
 
-    if tooo in cklist:
+    cklist = tooo
+    """
+    #if tooo in cklist:
+    #print("too:", tooo, "t_list:", t_list)
+    if tooo in t_list:
         ckt = True
     else:
         ckt = False
     return ckt
-    """
 
+
+    """
     i = 0
     ckt = False
     while i < lim + 1:
-        my_toots0 = tag_cutter.sub("", my_toots[0]['content'])
+        my_toots0 = tag_cutter.sub("", my_toots[i]['content'])
         if tooo == my_toots0:
             ckt = True
             return ckt
             break
         i += 1
     return ckt
-
+    """
 
 # 自分の投稿に反応しない
 def self_check(my_name):
@@ -65,15 +73,12 @@ def babu_haibu(converted_text):
 
 
 # れてぃあたん
-def is_retia(content: str) -> bool:
-    return bool(re.search(r"れてぃあたん", content))
-
 def retia_tan(converted_text):
     toot_string = ''
     if self_check(MyUserName):
         print('RetiaCK: ERR: 自分のトゥーに反応')
         toot_string = ''
-    elif is_retia(converted_text):
+    elif converted_text.find("れてぃあたん") >= 0:
         print('RetiaCK: 呼んだ？')
         toot_string = '呼んだ？　#れてぃあたん'
     else:
@@ -84,7 +89,7 @@ def retia_tan(converted_text):
 
 # 〇〇と聞いて
 def is_kiite(content: str):
-    return re.search(r"(カラオケ)|(ヒトカラ)|(メイド)|(お[ね姉][えー]*ちゃん)|((?:可愛い|かわいい)[女男]の[子娘])|(彼[女氏][ぁ-んァ-ン０-９a-zA-Z0-9\-]*[ほ欲]しい)", content)
+    return re.search(r"(カラオケ)|((?:奢|おご)[りる])|(メイド)|(お(?:ねえ|姉|ねー)ちゃん)|((?:可愛い|かわいい)[女男]の[子娘])|(彼[女氏][ぁ-んァ-ン０-９0-9人金、。]*[ほ欲]しい)", content)
 
 def to_kiite(converted_text):
     toot_string = ''
@@ -156,14 +161,19 @@ class MyStreamListener(StreamListener):
 
     def on_update(self, status):
         #tl = mastodon.timeline(timeline='local', limit=1, max_id=None)
-        tl = [status]
-        tl_cont = tag_cutter.sub("", tl[0]['content'])
-        #tl_display_name = tl[0]['account']['display_name']
-        tl_display_name = display_name_cutter.sub("☆", tl[0]['account']['display_name'])
+        tl_cont = tag_cutter.sub("", status['content'])
+        tl_display_name = display_name_cutter.sub("☆", status['account']['display_name'])
+
+        #重複チェック用自分の投稿キャッシュ
+        if status['account']['username'] == MyUserName:
+            tl_list.append(tl_cont)
+            if len(tl_list) > 3:
+                tl_list.pop(0)
+
 
         print("{},{:%Y-%m-%d %H:%M:%S}/{}/{}".format(
             'UP',
-            tl[0]['created_at'],
+            status['created_at'],
             tl_display_name,
             tl_cont
             )
@@ -188,8 +198,10 @@ class MyStreamListener(StreamListener):
         #生成した内容が過去トゥーと一致したらトゥーしない
         #何も生成してない場合もトゥーしない
         print('Next:', my_next_toot)
-        print('PASTCK:', toot_check(my_next_toot, 3))
-        if toot_check(my_next_toot, 3):
+        #print('PASTCK:', toot_check(my_next_toot, 3))
+        print('PASTCK:', toot_check(my_next_toot, tl_list, 3))
+        #if toot_check(my_next_toot, 3):
+        if toot_check(my_next_toot, tl_list, 3):
             print('TOOT: ERR: 重複')
             my_next_toot = ''
         elif my_next_toot == '':
@@ -205,6 +217,7 @@ class MyStreamListener(StreamListener):
         #self.logger.info(f"status delete_event: {status_id}")
         print(f"status delete_event: {status_id}")
         pass
+
 
 
 if __name__ == '__main__':
