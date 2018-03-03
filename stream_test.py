@@ -11,6 +11,24 @@ display_name_cutter = re.compile(r"(?:@|#|http.*:\/\/)") #display_nameでのい�
 tl_list = [] #重複チェック用キャッシュ
 
 
+# botの投稿に反応しない
+def is_bot(app):
+    if not app: return False
+    bot_names = [
+        'オフ会カレンダー',
+        'off_bot',
+        '安価bot',
+        '不適切bot',
+        "D's toot trends App",
+        'nekonyanApp',
+        '色bot',
+        'ダイスbot',
+        'VRれてぃあ'
+    ]
+    return app['name'] in bot_names
+
+
+
 # 過去の投稿との重複チェック（連投防止）
 #def toot_check(tooo, lim=3):
 def toot_check(tooo, t_list, lim=3):
@@ -183,7 +201,10 @@ class MyStreamListener(StreamListener):
         my_next_toot = ''
 
         #トゥー生成
-        if babu_haibu(tl_cont) != '':
+        if is_bot(status['application']):
+            print('BotCK:', status['application']['name'])
+            my_next_toot = ''
+        elif babu_haibu(tl_cont) != '':
             my_next_toot = babu_haibu(tl_cont)
         elif oo_kawaii(tl_cont, tl_display_name) != '':
             my_next_toot = oo_kawaii(tl_cont, tl_display_name)
@@ -217,6 +238,7 @@ class MyStreamListener(StreamListener):
         #self.logger.info(f"status delete_event: {status_id}")
         print(f"status delete_event: {status_id}")
         pass
+
 
 
 
