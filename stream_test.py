@@ -2,6 +2,7 @@
 from mastodon import Mastodon, StreamListener
 import re
 import random
+import json
 
 global mastodon
 
@@ -29,6 +30,20 @@ def is_bot(app):
     ]
     print('BotCK:', app['name'])
     return app['name'] in bot_names
+
+
+#ニックネーム機能
+def convert_nick(u_name, d_name):
+    f = open('nickname_list.json', 'r', encoding = 'utf-8')
+    nick_dict = json.load(f)
+
+    if u_name in nick_dict.keys():
+        nickname = nick_dict[u_name]
+    else:
+        nickname = d_name +'さん'
+
+    f.close()
+    return nickname
 
 
 # 過去の投稿との重複チェック（連投防止）
@@ -79,6 +94,14 @@ def self_check(my_name):
 '''
 
 
+#素メンションテスト（LTLにでてくるやつ
+def retia_mention(content, me_id, me_acct):
+    #tx = ['いまかわいいって言った？　#れてぃあたん', 'どしたの？　#れてぃあたん', 'それはダメだよ？　#れてぃあたん','なになに？　#れてぃあたん']
+    #tx = random.choice(toot_asa)
+    tx = 'いまかわいいって言った？　#れてぃあたん'
+    return tx
+
+
 # バ部は廃部
 def is_babu(content: str) -> bool:
     return bool(re.search(r"ママー+[ッ!！]", content))
@@ -112,7 +135,7 @@ def retia_tan(converted_text):
 
 # 〇〇と聞いて
 def is_kiite(content: str):
-    return re.search(r"(カラオケ)|((?:奢|おご)[りる])|(メイド)|(お(?:ねえ|姉|ねー)ちゃん)|((?:可愛い|かわいい)[女男]の[子娘])|(彼[女氏][ぁ-んァ-ン０-９0-9人金円万画像、。]*[ほ欲]しい)", content)
+    return re.search(r"(ダーツ)|(カラオケ)|((?:奢|おご)[りる])|(メイド)|(お(?:ねえ|姉|ねー)ちゃん)|((?:可愛い|かわいい)[女男]の[子娘])|(彼[女氏][ぁ-んァ-ン０-９0-9人金円万画像、。]*[ほ欲]しい)", content)
 
 def to_kiite(converted_text):
     toot_string = ''
@@ -130,12 +153,6 @@ def to_kiite(converted_text):
     return toot_string
 
 
-#素メンションテスト（LTLにでてくるやつ
-def retia_mention(content, me_id, me_acct):
-    tx = 'なになに？　#れてぃあたん'
-    return tx
-
-
 # 〇〇さんかわいい
 def is_kawaii(content: str) -> bool:
     return bool(re.search(r"(.+(?:とき|時).+るから|(おしゅし)|((?:た|だ)けどね.?？$)|(なんちゃって.?$)|.+(ましゅ.+)$|.+(しゅき).*)", content))
@@ -148,7 +165,7 @@ def oo_kawaii(converted_text, usr_name):
     #elif is_kawaii(converted_text):
     if is_kawaii(converted_text):
         print('KawaiiCK: かわいい')
-        toot_string = usr_name + 'さんかわいい☆　#れてぃあたん'
+        toot_string = usr_name + 'かわいい☆　#れてぃあたん'
     else:
         print('KawaiiCK: No Sweetie')
         toot_string = ''
@@ -167,7 +184,7 @@ def retikawa(converted_text, usr_name):
     #elif is_retikawa(converted_text):
     if is_retikawa(converted_text):
         print('RetiKawaCK: 大好き')
-        toot_string = usr_name + 'さん大好き☆　#れてぃあたん'
+        toot_string = usr_name + '大好き☆　#れてぃあたん'
     else:
         print('RetiKawaCK: Zenzen Sweetie Janai')
         toot_string = ''
@@ -193,6 +210,7 @@ class MyStreamListener(StreamListener):
         tl_cont = tag_cutter.sub("", status['content'])
         tl_display_name = display_name_cutter.sub("☆", status['account']['display_name'])
 
+        tl_display_name = convert_nick(status['account']['username'], tl_display_name) #ニックネーム
         #メンション用のidとaccount_name取得
         mention_to_id = ''
         match_acct = re.search(r"(^@.+)\s.+", tl_cont)
@@ -270,6 +288,7 @@ class MyStreamListener(StreamListener):
         #self.logger.info(f"status delete_event: {status_id}")
         print(f"status delete_event: {status_id}")
         pass
+
 
 
 
