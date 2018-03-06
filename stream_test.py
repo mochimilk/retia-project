@@ -6,7 +6,7 @@ import json
 
 global mastodon
 
-MyUserName = 'v_idol_retia' #このユーザーのトゥー稿には反応しない
+MyUserName = 'v_idol_retia' #自分のusername
 tag_cutter = re.compile(r"<[^>]*?>") #htmlタグ許すまじ
 display_name_cutter = re.compile(r"(?:@|#|http.*:\/\/)") #display_nameでのいたずら防止
 tl_list = [] #重複チェック用キャッシュ
@@ -96,9 +96,9 @@ def self_check(my_name):
 
 #素メンションテスト（LTLにでてくるやつ
 def retia_mention(content, me_id, me_acct):
-    #tx = ['いまかわいいって言った？　#れてぃあたん', 'どしたの？　#れてぃあたん', 'それはダメだよ？　#れてぃあたん','なになに？　#れてぃあたん']
-    #tx = random.choice(toot_asa)
-    tx = 'いまかわいいって言った？　#れてぃあたん'
+    tx_list = ['いまかわいいって言った？　#れてぃあたん', 'どしたの？　#れてぃあたん', 'それはダメだよ？　#れてぃあたん','なになに？　#れてぃあたん']
+    tx = random.choice(tx_list)
+    #tx = 'いまかわいいって言った？　#れてぃあたん'
     return tx
 
 
@@ -213,13 +213,13 @@ class MyStreamListener(StreamListener):
         tl_display_name = convert_nick(status['account']['username'], tl_display_name) #ニックネーム
         #メンション用のidとaccount_name取得
         mention_to_id = ''
-        match_acct = re.search(r"(^@.+)\s.+", tl_cont)
-        if match_acct:
-            mention_acct = match_acct.group(1)
-        else:
-            mention_acct = ''
+        match_acct = re.search(r"^(@v_idol_retia)[\s　](.+)", tl_cont)
+        #if match_acct:
+        #    mention_acct = match_acct.group(1)
+        #else:
+        #    mention_acct = ''
 
-        if mention_acct:
+        if match_acct:
             mention_to_id = status['id']
             mention_acct = status['account']['username']
         else:
@@ -288,9 +288,7 @@ class MyStreamListener(StreamListener):
         #self.logger.info(f"status delete_event: {status_id}")
         print(f"status delete_event: {status_id}")
         pass
-
-
-
+    
 
 if __name__ == '__main__':
     mastodon = Mastodon(
