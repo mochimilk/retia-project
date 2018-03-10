@@ -3,6 +3,7 @@ from mastodon import Mastodon, StreamListener
 import re
 import random
 import json
+import datetime
 
 global mastodon
 
@@ -112,18 +113,6 @@ def babu_haibu(converted_text):
     return toot_string
 
 
-# れてぃあたん
-def retia_tan(converted_text):
-    toot_string = ''
-    if converted_text.find("れてぃあたん") >= 0:
-        print('RetiaCK: 呼んだ？')
-        toot_string = '呼んだ？　#れてぃあたん'
-    else:
-        print('RetiaCK: No Retia')
-        toot_string = ''
-    return toot_string
-
-
 # 〇〇と聞いて
 def is_kiite(content: str):
     return re.search(r"(ダーツ)|(カラオケ)|((?:奢|おご)[りる])|(メイド)|(お(?:ねえ|姉|ねー)ちゃん)|((?:可愛い|かわいい)[女男]の[子娘])|(彼[女氏][ぁ-んァ-ン０-９0-9人金円万画像、。]*[ほ欲]しい)", content)
@@ -155,6 +144,38 @@ def oo_kawaii(converted_text, usr_name):
     return toot_string
 
 
+# 〇〇さんえっち
+def is_ecchi(content: str) -> bool:
+    return bool(re.search(r"(おっぱい.?[も揉](?:む|んで|みた))|^(え、エッチなのはいけないと思いますっ)$", content))
+
+def oo_ecchi(converted_text, usr_name):
+    toot_string = ''
+    if is_ecchi(converted_text):
+        print('HCK: えっち')
+        toot_string = usr_name + 'のえっち・・・　#れてぃあたん'
+    else:
+        print('HCK: No Ecchi')
+        toot_string = ''
+    return toot_string
+
+
+# 何曜日？
+def is_youbi(content: str) -> bool:
+    return bool(re.search(r"(?:きょう|今日)(?:は|って)*何曜日", content))
+
+def nani_youbi(converted_text):
+    toot_string = ''
+    youbi = ["月","火","水","木","金","土","日"]
+    nowyobi = datetime.date.today()
+    random.seed(nowyobi.weekday())
+    y = random.randint(0,6)
+    if is_youbi(converted_text):
+        toot_string = youbi[y] + '曜日だよ☆　#れてぃあたん'
+    else:
+        toot_string = ''
+    return toot_string
+
+
 # れてぃあたんかわいい⇒〇〇さん大好き
 def is_retikawa(content: str) -> bool:
     return bool(re.search(r"(れてぃあたん(?:かわいい|可愛い))", content))
@@ -166,6 +187,18 @@ def retikawa(converted_text, usr_name):
         toot_string = usr_name + '大好き☆　#れてぃあたん'
     else:
         print('RetiKawaCK: Zenzen Sweetie Janai')
+        toot_string = ''
+    return toot_string
+
+
+# れてぃあたん
+def retia_tan(converted_text):
+    toot_string = ''
+    if converted_text.find("れてぃあたん") >= 0:
+        print('RetiaCK: 呼んだ？')
+        toot_string = '呼んだ？　#れてぃあたん'
+    else:
+        print('RetiaCK: No Retia')
         toot_string = ''
     return toot_string
 
@@ -233,6 +266,10 @@ class MyStreamListener(StreamListener):
             my_next_toot = babu_haibu(tl_cont)
         elif oo_kawaii(tl_cont, tl_display_name) != '': #〇〇さんかわいい
             my_next_toot = oo_kawaii(tl_cont, tl_display_name)
+        elif oo_ecchi(tl_cont, tl_display_name) != '': #〇〇さんえっち
+            my_next_toot = oo_ecchi(tl_cont, tl_display_name)
+        elif nani_youbi(tl_cont) != '': #何曜日
+            my_next_toot = nani_youbi(tl_cont)
         elif to_kiite(tl_cont) != '': #〇〇と聞いて
             my_next_toot = to_kiite(tl_cont)
         elif mention_to_id != '': #LTLに表示されるメンションに対する反応
@@ -267,6 +304,7 @@ class MyStreamListener(StreamListener):
         #self.logger.info(f"status delete_event: {status_id}")
         print(f"status delete_event: {status_id}")
         pass
+
 
 
 if __name__ == '__main__':
