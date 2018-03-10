@@ -178,15 +178,34 @@ def nani_youbi(converted_text):
 
 # れてぃあたんかわいい⇒〇〇さん大好き
 def is_retikawa(content: str) -> bool:
-    return bool(re.search(r"(れてぃあたん(?:かわいい|可愛い))", content))
+    return bool(re.search(r"(?!れてぃあ(?:たん)?(?:かわい|可愛)くない)(れてぃあ(?:たん)?(?:かわいい|可愛い|すてき|素敵|美人))", content))
 
 def retikawa(converted_text, usr_name):
     toot_string = ''
+    tx_list = ['大好き☆','、かわいくないよ？','ありがと☆','大好き☆','ありがと☆',]
+    tx = random.choice(tx_list)
     if is_retikawa(converted_text):
         print('RetiKawaCK: 大好き')
-        toot_string = usr_name + '大好き☆　#れてぃあたん'
+        toot_string = usr_name + tx + '　#れてぃあたん'
     else:
         print('RetiKawaCK: Zenzen Sweetie Janai')
+        toot_string = ''
+    return toot_string
+
+
+# れてぃあたんかわいくない⇒怒り
+def is_not_retikawa(content: str) -> bool:
+    return bool(re.search(r"(れてぃあ(?:たん)?(?:かわい|可愛)くない)(?!れてぃあ(?:たん)?(?:かわいい|可愛い|すてき|素敵|美人))", content))
+
+def not_retikawa(converted_text, usr_name):
+    toot_string = ''
+    tx_list = ['爆破してくるね☆','・・・。つらみ','にブロッコリー刺してくる☆',]
+    tx = random.choice(tx_list)
+    if is_not_retikawa(converted_text):
+        print('NoRetiKawaCK: 爆破')
+        toot_string = 'ちょっと' + usr_name + tx + '　#れてぃあたん'
+    else:
+        print('NoRetiKawaCK: Sweetie')
         toot_string = ''
     return toot_string
 
@@ -276,6 +295,8 @@ class MyStreamListener(StreamListener):
             my_next_toot = '@' + mention_acct + ' ' + retia_mention(tl_cont, tl_display_name)
         elif retikawa(tl_cont, tl_display_name) != '': #れてぃあたんかわいい
             my_next_toot = retikawa(tl_cont, tl_display_name)
+        elif not_retikawa(tl_cont, tl_display_name) != '': #れてぃあたん可愛くない
+            my_next_toot = not_retikawa(tl_cont, tl_display_name)
         elif retia_tan(tl_cont) != '': #れてぃあたんを呼んだ場合
             my_next_toot = retia_tan(tl_cont)
 
