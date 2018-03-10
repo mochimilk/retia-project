@@ -21,13 +21,14 @@ def is_bot(app):
         '安価bot',
         '不適切bot',
         "社畜丼トレンド",
-        'nekonyanApp',
         '色bot',
         'ダイスbot',
         'VRれてぃあ',
-        'Cordelia',
-        '漣ちゃん'
-    ]
+        'nekonyanApp'
+    ] 
+        #'漣ちゃん',
+        #'Cordelia',
+
     print('BotCK:', app['name'])
     return app['name'] in bot_names
 
@@ -36,9 +37,15 @@ def is_bot(app):
 def convert_nick(u_name, d_name):
     f = open('nickname_list.json', 'r', encoding = 'utf-8')
     nick_dict = json.load(f)
+    nickname = ''
 
     if u_name in nick_dict.keys():
-        nickname = nick_dict[u_name]
+        if u_name == 'daiotail':
+            for i in range(1,random.randint(2, 16)):
+                nickname = nickname + 'お'
+            nickname = nickname + 'さん'
+        else:
+            nickname = nick_dict[u_name]
     else:
         nickname = d_name +'さん'
 
@@ -82,20 +89,8 @@ def toot_check(tooo, t_list, lim=3):
     """
 
 
-'''
-# 自分の投稿に反応しない
-def self_check(my_name):
-    tl = mastodon.timeline(timeline='local', limit=1, max_id=None)
-    if my_name == tl[0]['account']['username']:
-        selfCK = True
-    else:
-        selfCK = False
-    return selfCK
-'''
-
-
 #素メンションテスト（LTLにでてくるやつ
-def retia_mention(content, me_id, me_acct):
+def retia_mention(content, me_d_name):
     tx_list = ['いまかわいいって言った？　#れてぃあたん', 'どしたの？　#れてぃあたん', 'それはダメだよ？　#れてぃあたん','なになに？　#れてぃあたん']
     tx = random.choice(tx_list)
     #tx = 'いまかわいいって言った？　#れてぃあたん'
@@ -120,10 +115,6 @@ def babu_haibu(converted_text):
 # れてぃあたん
 def retia_tan(converted_text):
     toot_string = ''
-    #if self_check(MyUserName):
-    #    print('RetiaCK: ERR: 自分のトゥーに反応')
-    #    toot_string = ''
-    #elif converted_text.find("れてぃあたん") >= 0:
     if converted_text.find("れてぃあたん") >= 0:
         print('RetiaCK: 呼んだ？')
         toot_string = '呼んだ？　#れてぃあたん'
@@ -140,10 +131,6 @@ def is_kiite(content: str):
 def to_kiite(converted_text):
     toot_string = ''
     mKiite = is_kiite(converted_text)
-    #if self_check(MyUserName):
-    #    print('KiiteCK: ERR: 自分のトゥーに反応')
-    #    toot_string = ''
-    #elif mKiite:
     if mKiite:
         print('KiiteCK: 聞こえた')
         toot_string = mKiite.group() + 'と聞いて　#れてぃあたん'
@@ -155,14 +142,10 @@ def to_kiite(converted_text):
 
 # 〇〇さんかわいい
 def is_kawaii(content: str) -> bool:
-    return bool(re.search(r"(.+(?:とき|時).+るから|(おしゅし)|((?:た|だ)けどね.?？$)|(なんちゃって.?$)|.+(ましゅ.+)$|.+(しゅき).*)", content))
+    return bool(re.search(r".+(?!時間)(?:とき|時).+るから|(おしゅし)|((?:た|だ)けどね.?？$)|(なんちゃって.?$)|.+(ましゅ.+)$|.+(しゅき).*|(まおー城爆破～♪)$", content))
 
 def oo_kawaii(converted_text, usr_name):
     toot_string = ''
-    #if self_check(MyUserName):
-    #    print('KawaiiCK: ERR: 自分のトゥーに反応')
-    #    toot_string = ''
-    #elif is_kawaii(converted_text):
     if is_kawaii(converted_text):
         print('KawaiiCK: かわいい')
         toot_string = usr_name + 'かわいい☆　#れてぃあたん'
@@ -178,10 +161,6 @@ def is_retikawa(content: str) -> bool:
 
 def retikawa(converted_text, usr_name):
     toot_string = ''
-    #if self_check(MyUserName):
-    #    print('RetiKawaCK: ERR: 自分のトゥーに反応')
-    #    toot_string = ''
-    #elif is_retikawa(converted_text):
     if is_retikawa(converted_text):
         print('RetiKawaCK: 大好き')
         toot_string = usr_name + '大好き☆　#れてぃあたん'
@@ -246,28 +225,28 @@ class MyStreamListener(StreamListener):
         my_next_toot = ''
 
         #トゥー生成
-        if is_bot(status['application']):
+        if is_bot(status['application']): #botリストに入っているなら反応しない
             my_next_toot = ''
-        elif babu_haibu(tl_cont) != '':
+        elif status['spoiler_text'] != '': #CWなら反応しない
+            my_next_toot = ''
+        elif babu_haibu(tl_cont) != '': #バ部は廃部
             my_next_toot = babu_haibu(tl_cont)
-        elif oo_kawaii(tl_cont, tl_display_name) != '':
+        elif oo_kawaii(tl_cont, tl_display_name) != '': #〇〇さんかわいい
             my_next_toot = oo_kawaii(tl_cont, tl_display_name)
-        elif to_kiite(tl_cont) != '':
+        elif to_kiite(tl_cont) != '': #〇〇と聞いて
             my_next_toot = to_kiite(tl_cont)
-        elif mention_to_id != '':
-            my_next_toot = '@' + mention_acct + ' ' + retia_mention(tl_cont, mention_to_id, mention_acct)
-        elif retikawa(tl_cont, tl_display_name) != '':
+        elif mention_to_id != '': #LTLに表示されるメンションに対する反応
+            my_next_toot = '@' + mention_acct + ' ' + retia_mention(tl_cont, tl_display_name)
+        elif retikawa(tl_cont, tl_display_name) != '': #れてぃあたんかわいい
             my_next_toot = retikawa(tl_cont, tl_display_name)
-        elif retia_tan(tl_cont) != '':
+        elif retia_tan(tl_cont) != '': #れてぃあたんを呼んだ場合
             my_next_toot = retia_tan(tl_cont)
 
 
         #生成した内容が過去トゥーと一致したらトゥーしない
         #何も生成してない場合もトゥーしない
         print('Next:', my_next_toot)
-        #print('PASTCK:', toot_check(my_next_toot, 3))
         print('PASTCK:', toot_check(my_next_toot, tl_list, 3))
-        #if toot_check(my_next_toot, 3):
         if toot_check(my_next_toot, tl_list, 3):
             print('TOOT: ERR: 重複')
             my_next_toot = ''
@@ -288,7 +267,7 @@ class MyStreamListener(StreamListener):
         #self.logger.info(f"status delete_event: {status_id}")
         print(f"status delete_event: {status_id}")
         pass
-    
+
 
 if __name__ == '__main__':
     mastodon = Mastodon(
