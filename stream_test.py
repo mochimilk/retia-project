@@ -90,11 +90,19 @@ def toot_check(tooo, t_list, lim=3):
     """
 
 
+"""
 #素メンションテスト（LTLにでてくるやつ
 def retia_mention(content, me_d_name):
     tx_list = ['いまかわいいって言った？　#れてぃあたん', 'どしたの？　#れてぃあたん', 'それはダメだよ？　#れてぃあたん','なになに？　#れてぃあたん']
     tx = random.choice(tx_list)
     #tx = 'いまかわいいって言った？　#れてぃあたん'
+    return tx
+"""
+# 素メンションテスト（LTLにでてくるやつV2
+def is_mention(content, me_d_name):
+    random.seed()
+    tx_list = ['いまかわいいって言った？　#れてぃあたん', 'どしたの？　#れてぃあたん', 'それはダメだよ？　#れてぃあたん','なになに？　#れてぃあたん']
+    tx = random.choice(tx_list)
     return tx
 
 
@@ -178,11 +186,12 @@ def nani_youbi(converted_text):
 
 # れてぃあたんかわいい⇒〇〇さん大好き
 def is_retikawa(content: str) -> bool:
-    return bool(re.search(r"(?!れてぃあ(?:たん)?(?:かわい|可愛)くない)(れてぃあ(?:たん)?(?:かわいい|可愛い|すてき|素敵|美人))", content))
+    return bool(re.search(r"(れてぃあ(?:たん)?[は]?)(?!(?:かわい|可愛い)くない)(?:かわいい|可愛い|すてき|素敵|美人)(?!？|\?|ない|無い|とでも|、|で[は]?ない)", content))
 
 def retikawa(converted_text, usr_name):
+    random.seed()
     toot_string = ''
-    tx_list = ['大好き☆','、かわいくないよ？','ありがと☆','大好き☆','ありがと☆',]
+    tx_list = ['大好き☆','、わたしはそんなにかわいくないよ？','ありがと☆','・・・','のほうがかわいいよ☆',]
     tx = random.choice(tx_list)
     if is_retikawa(converted_text):
         print('RetiKawaCK: 大好き')
@@ -195,9 +204,10 @@ def retikawa(converted_text, usr_name):
 
 # れてぃあたんかわいくない⇒怒り
 def is_not_retikawa(content: str) -> bool:
-    return bool(re.search(r"(れてぃあ(?:たん)?(?:かわい|可愛)くない)(?!れてぃあ(?:たん)?(?:かわいい|可愛い|すてき|素敵|美人))", content))
+    return bool(re.search(r"(れてぃあ(?:たん)?[は]?)(?:(?:かわいく|可愛いく|美人|すてき|素敵)[ではじゃ]?ない)", content))
 
 def not_retikawa(converted_text, usr_name):
+    random.seed()
     toot_string = ''
     tx_list = ['爆破してくるね☆','・・・。つらみ','にブロッコリー刺してくる☆',]
     tx = random.choice(tx_list)
@@ -237,7 +247,6 @@ class MyStreamListener(StreamListener):
 
 
     def on_update(self, status):
-        #tl = mastodon.timeline(timeline='local', limit=1, max_id=None)
         tl_cont = tag_cutter.sub("", status['content'])
         tl_display_name = display_name_cutter.sub("☆", status['account']['display_name'])
 
@@ -325,8 +334,7 @@ class MyStreamListener(StreamListener):
         #self.logger.info(f"status delete_event: {status_id}")
         print(f"status delete_event: {status_id}")
         pass
-
-
+    
 
 if __name__ == '__main__':
     mastodon = Mastodon(
