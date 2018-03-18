@@ -4,6 +4,7 @@ import re
 import random
 import json
 import datetime
+import threading
 
 global mastodon
 
@@ -11,6 +12,7 @@ MyUserName = 'v_idol_retia' #自分のusername
 tag_cutter = re.compile(r"<[^>]*?>") #htmlタグ許すまじ
 display_name_cutter = re.compile(r"(?:@|#|http.*:\/\/)") #display_nameでのいたずら防止
 tl_list = [] #重複チェック用キャッシュ
+dupli_count = 3 #重複チェックカウンター（キャッシュに取り込むトゥート数）
 
 
 # botの投稿に反応しない
@@ -25,10 +27,10 @@ def is_bot(app):
         '色bot',
         'ダイスbot',
         'VRれてぃあ',
+        '漣ちゃん',
+        'Cordelia',
         'nekonyanApp'
     ] 
-        #'漣ちゃん',
-        #'Cordelia',
 
     print('BotCK:', app['name'])
     return app['name'] in bot_names
@@ -90,16 +92,8 @@ def toot_check(tooo, t_list, lim=3):
     """
 
 
-"""
-#素メンションテスト（LTLにでてくるやつ
-def retia_mention(content, me_d_name):
-    tx_list = ['いまかわいいって言った？　#れてぃあたん', 'どしたの？　#れてぃあたん', 'それはダメだよ？　#れてぃあたん','なになに？　#れてぃあたん']
-    tx = random.choice(tx_list)
-    #tx = 'いまかわいいって言った？　#れてぃあたん'
-    return tx
-"""
 # 素メンションテスト（LTLにでてくるやつV2
-def is_mention(content, me_d_name):
+def retia_mention(content, mention_d_name):
     random.seed()
     tx_list = ['いまかわいいって言った？　#れてぃあたん', 'どしたの？　#れてぃあたん', 'それはダメだよ？　#れてぃあたん','なになに？　#れてぃあたん']
     tx = random.choice(tx_list)
@@ -139,7 +133,7 @@ def to_kiite(converted_text):
 
 # 〇〇さんかわいい
 def is_kawaii(content: str) -> bool:
-    return bool(re.search(r".+(?!時間)(?:とき|時).+るから|(おしゅし)|((?:た|だ)けどね.?？$)|(なんちゃって.?$)|.+(ましゅ.+)$|.+(しゅき).*|(まおー城爆破～♪)$", content))
+    return bool(re.search(r".+(?!時間)(?:とき|時).+るから|(おしゅし)|((?:た|だ)けどね.?？$)|(なんちゃって.?$)|.+(ましゅ.+)$|.+(しゅき).*$", content))
 
 def oo_kawaii(converted_text, usr_name):
     toot_string = ''
@@ -154,7 +148,7 @@ def oo_kawaii(converted_text, usr_name):
 
 # 〇〇さんえっち
 def is_ecchi(content: str) -> bool:
-    return bool(re.search(r"(おっぱい.?[も揉](?:む|んで|みた))|^(え、エッチなのはいけないと思いますっ)$", content))
+    return bool(re.search(r"(おっぱい.?[も揉](?:む|んで|みた))|(?:一緒|いっしょ)に寝[よて]|れてぃあ(?:たん)?、*(つきあって|付き合って|愛してる|の?えっち)", content))
 
 def oo_ecchi(converted_text, usr_name):
     toot_string = ''
@@ -191,7 +185,7 @@ def is_retikawa(content: str) -> bool:
 def retikawa(converted_text, usr_name):
     random.seed()
     toot_string = ''
-    tx_list = ['大好き☆','、わたしはそんなにかわいくないよ？','ありがと☆','・・・','のほうがかわいいよ☆',]
+    tx_list = ['大好き☆','ありがと☆','・・・☆','のほうがかわいいよ☆',]
     tx = random.choice(tx_list)
     if is_retikawa(converted_text):
         print('RetiKawaCK: 大好き')
@@ -209,7 +203,7 @@ def is_not_retikawa(content: str) -> bool:
 def not_retikawa(converted_text, usr_name):
     random.seed()
     toot_string = ''
-    tx_list = ['爆破してくるね☆','・・・。つらみ','にブロッコリー刺してくる☆',]
+    tx_list = ['爆破してくるね☆','・・・','にブロッコリー刺してくる☆',]
     tx = random.choice(tx_list)
     if is_not_retikawa(converted_text):
         print('NoRetiKawaCK: 爆破')
@@ -232,7 +226,7 @@ def retia_tan(converted_text):
     return toot_string
 
 
-# ストリーム取得して実際に何かするところ
+# ローカルタイムラインのストリーム取得
 class MyStreamListener(StreamListener):
     def __init__(self):
         super(MyStreamListener, self).__init__()
@@ -249,15 +243,10 @@ class MyStreamListener(StreamListener):
     def on_update(self, status):
         tl_cont = tag_cutter.sub("", status['content'])
         tl_display_name = display_name_cutter.sub("☆", status['account']['display_name'])
-
         tl_display_name = convert_nick(status['account']['username'], tl_display_name) #ニックネーム
         #メンション用のidとaccount_name取得
         mention_to_id = ''
         match_acct = re.search(r"^(@v_idol_retia)[\s　](.+)", tl_cont)
-        #if match_acct:
-        #    mention_acct = match_acct.group(1)
-        #else:
-        #    mention_acct = ''
 
         if match_acct:
             mention_to_id = status['id']
@@ -269,12 +258,12 @@ class MyStreamListener(StreamListener):
         #重複チェック用自分の投稿キャッシュ
         if status['account']['username'] == MyUserName:
             tl_list.append(tl_cont)
-            if len(tl_list) > 3:
+            if len(tl_list) > dupli_count:
                 tl_list.pop(0)
 
         #タイムライン表示
         print("{},{:%Y-%m-%d %H:%M:%S}/{}/{}/{}".format(
-            'UP',
+            'UPDATE_LOCAL',
             status['created_at'],
             mention_to_id,
             tl_display_name,
@@ -327,21 +316,99 @@ class MyStreamListener(StreamListener):
                 in_reply_to_id = mention_to_id,
                 visibility='public'
             )
-
         pass
+
 
     def on_delete(self, status_id):
         #self.logger.info(f"status delete_event: {status_id}")
         print(f"status delete_event: {status_id}")
         pass
-    
 
+
+    def handle_heartbeat(self):
+        """The server has sent us a keep-alive message. This callback may be
+        useful to carry out periodic housekeeping tasks, or just to confirm
+        that the connection is still open."""
+        #print('Server: Keep-Alive.')
+        pass
+
+
+# ホームタイムラインのストリーム取得
+class MyUserListener(StreamListener):
+    def __init__(self):
+        super(MyUserListener, self).__init__()
+
+
+    def handle_stream(self, response):
+        try:
+            super().handle_stream(response)
+        except:
+            # do something
+            raise
+
+    def on_update(self, status):
+        tl_cont = tag_cutter.sub("", status['content'])
+        tl_display_name = display_name_cutter.sub("☆", status['account']['display_name'])
+        tl_display_name = convert_nick(status['account']['username'], tl_display_name) #ニックネーム
+        #メンション用のidとaccount_name取得
+        mention_to_id = ''
+        match_acct = re.search(r"^(@v_idol_retia)[\s　](.+)", tl_cont)
+
+        if match_acct:
+            mention_to_id = status['id']
+            mention_acct = status['account']['username']
+        else:
+            mention_to_id = ''
+            mention_acct = ''
+
+        #タイムライン表示
+        print("{},{:%Y-%m-%d %H:%M:%S}/{}/{}/{}".format(
+            'UPDATE_HOME',
+            status['created_at'],
+            mention_to_id,
+            tl_display_name,
+            tl_cont
+            )
+        )
+        pass
+
+    def on_notification(self, notification):
+        print("NOTICE:", notification)
+        pass
+
+
+# StreamListenerクラスを作る
+class LTL():
+    def __init__(self):
+        pass
+
+    def t_local():
+        listener = MyStreamListener()
+        mastodon.stream_local(listener)
+
+
+class HTL():
+    def __init__(self):
+        pass
+
+    def t_home():
+        listener = MyUserListener()
+        mastodon.stream_user(listener)
+
+
+# ★メインの処理
 if __name__ == '__main__':
     mastodon = Mastodon(
-        client_id="XXXXX.txt",
-        access_token="XXXXX.txt",
+        client_id="xxxxxxx.txt",
+        access_token="xxxxxxxx.txt",
         api_base_url = "https://mstdn-workers.com"
     )
 
-    listener = MyStreamListener()
-    mastodon.stream_local(listener)
+ltl = threading.Thread(target=LTL.t_local, daemon = True)
+htl = threading.Thread(target=HTL.t_home, daemon = True)
+ltl.start()
+htl.start()
+
+while True:
+    ltl.join(0.5)
+    htl.join(0.5)
