@@ -404,7 +404,11 @@ if __name__ == '__main__':
         api_base_url = "https://mstdn-workers.com"
     )
 
-ltl = threading.Thread(target=LTL.t_local)
-htl = threading.Thread(target=HTL.t_home)
+ltl = threading.Thread(target=LTL.t_local, daemon = True)
+htl = threading.Thread(target=HTL.t_home, daemon = True)
 ltl.start()
 htl.start()
+
+while True:
+    ltl.join(0.5)
+    htl.join(0.5)
