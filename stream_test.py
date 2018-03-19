@@ -6,6 +6,10 @@ import json
 import datetime
 import threading
 
+import trafic
+#import urllib.request
+
+
 global mastodon
 
 MyUserName = 'v_idol_retia' #自分のusername
@@ -29,6 +33,7 @@ def is_bot(app):
         'VRれてぃあ',
         '漣ちゃん',
         'Cordelia',
+        'Yuki',
         'nekonyanApp'
     ] 
 
@@ -131,6 +136,23 @@ def to_kiite(converted_text):
         print('KiiteCK: No Match')
         toot_string = ''
     return toot_string
+
+
+# 道路交通情報
+def info_trafic(converted_text):
+    toot_string = ''
+    tr = re.search(r"れてぃあ(?:たん)?(?:、)?(.+)[の]道路", converted_text)
+    if tr:
+        tr_tx = tr.group(1)
+        print('TRAFIC:', tr_tx)
+        toot_string = trafic.get_trafic(tr_tx, 1) 
+        if len(toot_string) > 450:
+            toot_str_list = [toot_string[i: i+450] for i in range(0, len(toot_string), 450)]
+            toot_string = toot_str_list[0] + '\n#れてぃあたん'
+            return toot_string
+        else:
+            toot_string = toot_string + '\n#れてぃあたん'
+            return toot_string
 
 
 # 〇〇さんかわいい
@@ -289,6 +311,8 @@ class MyStreamListener(StreamListener):
             my_next_toot = oo_ecchi(tl_cont, tl_display_name)
         elif nani_youbi(tl_cont) != '': #何曜日
             my_next_toot = nani_youbi(tl_cont)
+        elif info_trafic(tl_cont) != '': #道路交通情報
+            my_next_toot = info_trafic(tl_cont)
         elif to_kiite(tl_cont) != '': #〇〇と聞いて
             my_next_toot = to_kiite(tl_cont)
         elif mention_to_id != '': #LTLに表示されるメンションに対する反応
@@ -439,7 +463,6 @@ class MyUserListener(StreamListener):
                 visibility='public'
             )
         pass
-
 
 
 # StreamListenerクラスを作る
