@@ -6,7 +6,8 @@ import json
 import datetime
 import threading
 
-import trafic
+#from mymod import traffic
+import traffic
 #import urllib.request
 
 
@@ -64,44 +65,18 @@ def convert_nick(u_name, d_name):
 # 過去の投稿との重複チェック（連投防止）
 #def toot_check(tooo, lim=3):
 def toot_check(tooo, t_list, lim=3):
-    """
-    my_dict = mastodon.account_verify_credentials()
-    my_toots = mastodon.account_statuses(my_dict['id'], limit=lim)
-    
-    my_toots0 = tag_cutter.sub("", my_toots[0]['content'])
-    my_toots1 = tag_cutter.sub("", my_toots[1]['content'])
-    my_toots2 = tag_cutter.sub("", my_toots[2]['content'])
-    cklist = [my_toots0, my_toots1, my_toots2]
-
-    cklist = tooo
-    """
-    #if tooo in cklist:
-    #print("too:", tooo, "t_list:", t_list)
     if tooo in t_list:
         ckt = True
     else:
         ckt = False
     return ckt
 
-    """
-    i = 0
-    ckt = False
-    while i < lim + 1:
-        my_toots0 = tag_cutter.sub("", my_toots[i]['content'])
-        if tooo == my_toots0:
-            ckt = True
-            return ckt
-            break
-        i += 1
-    return ckt
-    """
-
 
 # メンションテストV3
 def retia_mention(content, mention_d_name, mention_type):
     random.seed()
     tx = ''
-    if mention_type != '':
+    if mention_type != '': #notification['type']が空＝LTLに表示されるメンションの場合
         tx_list = ['いまかわいいって言った？　#れてぃあたん', 'どしたの？　#れてぃあたん', 'それはダメだよ？　#れてぃあたん','なになに？　#れてぃあたん']
         tx = random.choice(tx_list)
     return tx
@@ -139,20 +114,22 @@ def to_kiite(converted_text):
 
 
 # 道路交通情報
-def info_trafic(converted_text):
+def info_traffic(converted_text):
     toot_string = ''
     tr = re.search(r"れてぃあ(?:たん)?(?:、)?(.+)[の]道路", converted_text)
     if tr:
         tr_tx = tr.group(1)
-        print('TRAFIC:', tr_tx)
-        toot_string = trafic.get_trafic(tr_tx, 1) 
-        if len(toot_string) > 450:
-            toot_str_list = [toot_string[i: i+450] for i in range(0, len(toot_string), 450)]
+        print('TRAFFIC:', tr_tx)
+        toot_string = traffic.get_traffic(tr_tx, 2) 
+
+        if len(toot_string) > 490:
+            toot_str_list = [toot_string[i: i+490] for i in range(0, len(toot_string), 490)]
             toot_string = toot_str_list[0] + '\n#れてぃあたん'
             return toot_string
         else:
             toot_string = toot_string + '\n#れてぃあたん'
             return toot_string
+        return toot_string
 
 
 # 〇〇さんかわいい
@@ -297,6 +274,7 @@ class MyStreamListener(StreamListener):
 
         #トゥー内容初期化
         my_next_toot = ''
+        spo_text = ''
 
         #トゥー生成
         if is_bot(status['application']): #botリストに入っているなら反応しない
@@ -311,17 +289,20 @@ class MyStreamListener(StreamListener):
             my_next_toot = oo_ecchi(tl_cont, tl_display_name)
         elif nani_youbi(tl_cont) != '': #何曜日
             my_next_toot = nani_youbi(tl_cont)
-        elif info_trafic(tl_cont) != '': #道路交通情報
-            my_next_toot = info_trafic(tl_cont)
         elif to_kiite(tl_cont) != '': #〇〇と聞いて
             my_next_toot = to_kiite(tl_cont)
-        elif mention_to_id != '': #LTLに表示されるメンションに対する反応
-            if retia_mention(tl_cont, tl_display_name, '') != '':
-                my_next_toot = '@' + mention_acct + ' ' + retia_mention(tl_cont, tl_display_name, '')
+        elif info_traffic(tl_cont) != '': #道路交通情報
+            #my_next_list = info_traffic(tl_cont).split('★')
+            #spo_text = my_next_list[0]
+            #my_next_toot = my_next_list[1]
+            my_next_toot = info_traffic(tl_cont)
         elif retikawa(tl_cont, tl_display_name) != '': #れてぃあたんかわいい
             my_next_toot = retikawa(tl_cont, tl_display_name)
         elif not_retikawa(tl_cont, tl_display_name) != '': #れてぃあたん可愛くない
             my_next_toot = not_retikawa(tl_cont, tl_display_name)
+        elif mention_to_id != '': #LTLに表示されるメンションに対する反応
+            if retia_mention(tl_cont, tl_display_name, '') != '':
+                my_next_toot = '@' + mention_acct + ' ' + retia_mention(tl_cont, tl_display_name, '')
         elif retia_tan(tl_cont) != '': #れてぃあたんを呼んだ場合
             my_next_toot = retia_tan(tl_cont)
 
@@ -341,7 +322,8 @@ class MyStreamListener(StreamListener):
             mastodon.status_post(
                 status = my_next_toot,
                 in_reply_to_id = mention_to_id,
-                visibility='public'
+                visibility = 'public',
+                spoiler_text = spo_text
             )
         pass
 
@@ -421,7 +403,7 @@ class MyUserListener(StreamListener):
         my_next_toot = ''
 
         #トゥー生成
-        if notification['type'] != 'mention':
+        if notification['type'] != 'mention': #メンション以外の通知は何もしない
             pass
         elif is_bot(notification['status']['application']): #botリストに入っているなら反応しない
             my_next_toot = ''
@@ -437,14 +419,21 @@ class MyUserListener(StreamListener):
             my_next_toot = '@' + mention_acct + ' ' + nani_youbi(tl_cont)
         elif to_kiite(tl_cont) != '': #〇〇と聞いて
             my_next_toot = '@' + mention_acct + ' ' + to_kiite(tl_cont)
+        """
+        elif info_traffic(tl_cont) != '': #道路交通情報
+            #my_next_list = info_traffic(tl_cont).split('\n',1)
+            #spo_text = my_next_list[0]
+            #my_next_toot = my_next_list[1]
+            my_next_toot =  '@' + mention_acct + ' ' + info_traffic(tl_cont)
+        """
         elif retikawa(tl_cont, tl_display_name) != '': #れてぃあたんかわいい
             my_next_toot = '@' + mention_acct + ' ' + retikawa(tl_cont, tl_display_name)
         elif not_retikawa(tl_cont, tl_display_name) != '': #れてぃあたん可愛くない
             my_next_toot = '@' + mention_acct + ' ' + not_retikawa(tl_cont, tl_display_name)
-        elif retia_tan(tl_cont) != '': #れてぃあたんを呼んだ場合
-            my_next_toot = '@' + mention_acct + ' ' + retia_tan(tl_cont)
         elif mention_to_id != '': #通知に表示されるメンションに対する反応
             my_next_toot = '@' + mention_acct + ' ' + retia_mention(tl_cont, tl_display_name, notification['type'])
+        elif retia_tan(tl_cont) != '': #れてぃあたんを呼んだ場合
+            my_next_toot = '@' + mention_acct + ' ' + retia_tan(tl_cont)
 
         #生成した内容が過去トゥーと一致したらトゥーしない
         #何も生成してない場合もトゥーしない
@@ -460,7 +449,7 @@ class MyUserListener(StreamListener):
             mastodon.status_post(
                 status = my_next_toot,
                 in_reply_to_id = mention_to_id,
-                visibility='public'
+                visibility = 'public'
             )
         pass
 
