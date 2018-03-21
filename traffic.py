@@ -21,9 +21,9 @@
 # 　        1010　沖縄地方
 # 
 # 　highway：抽出したい路線名（配列）
-# 　mode：0=通行止めだけツイート、1=規制があればツイート
+# 　mode：0=通行止めだけトゥー、1=規制があればトゥー、2=通行止と「規制中」があればトゥー
 # 　doro_joho：json形式からdict型となった生データ
-# 　trafic_list：抽出した路線の規制情報のリスト。
+# 　traffic_list：抽出した路線の規制情報のリスト。
 # 　toot_text：トゥート内容。これを戻り値にする
 # 　------
 # 　分解した["item"]の中身
@@ -41,10 +41,12 @@ import re
 import urllib.request
 
 
-def get_trafic(code_text, mode=0):
+def get_traffic(code_text, mode=0):
     print('○　道路情報取得中 powerd by @mochimilk_')
-    trafic_list = []
+    traffic_list = []
+    toot_header = ''
     toot_text = ''
+    kisei = ''
     code_dict = {'北海道':'1001', 
                  '東北':'1002', 
                  '関東':'1003', 
@@ -77,41 +79,80 @@ def get_trafic(code_text, mode=0):
         item_list[6] = re.sub(r"第１走行規制|追越車線規制|登坂車線規制", "車線規制", item_list[6])
 
         if item_list[6] == '規制なし':
-            print(item_list[11] + ':', item_list[6])
+        #    print(item_list[11] + ':', item_list[6])
+            pass
 
-        elif mode == 0 and item_list[6] == '通行止': #mode=0：通行止めのみ
+        #mode=0：通行止のみ
+        elif mode == 0 and item_list[6] == '通行止': 
             if item_list[3] == '': #起点が空欄
-                tx = '・' + item_list[4] + '(' + item_list[2] + ')で' + \
+                tx = item_list[11]  + '：' + item_list[4] + '(' + item_list[2] + ')で' + \
                                  item_list[5] + 'のため' + item_list[6]
-                trafic_list.append(tx)
+                traffic_list.append(tx)
             else: #起点がある
-                tx = '・' + item_list[3] + '→' + item_list[4] + \
+                tx = item_list[11] + '：' + item_list[3] + '→' + item_list[4] + \
                                  '(' + item_list[2] + ')で' + \
                                  item_list[5] + 'のため' + item_list[6]
-                trafic_list.append(tx)
+                traffic_list.append(tx)
 
-        elif mode == 1: #mode=1：規制があれば
+
+        #mode=1：全種類の規制がある場合
+        elif mode == 1: 
             if item_list[3] == '': #起点が空欄
-                tx = '・' + item_list[4] + '(' + item_list[2] + ')で' + \
+                tx = item_list[11] + '：' + item_list[4] + '(' + item_list[2] + ')で' + \
                                  item_list[5] + 'のため' + item_list[6]
-                trafic_list.append(tx)
+                traffic_list.append(tx)
             else: #起点がある
-                tx = '・' + item_list[3] + '→' + item_list[4] + \
+                tx = item_list[11] + '：' + item_list[3] + '→' + item_list[4] + \
                                  '(' + item_list[2] + ')で' + \
                                  item_list[5] + 'のため' + item_list[6]
-                trafic_list.append(tx)
+                traffic_list.append(tx)
 
-    #print(trafic_list)
+        #mode=2：通行止と「規制中」のみ
+        elif mode == 2 and (item_list[6] == '通行止' or item_list[6] == '規制中'): 
+            if item_list[3] == '': #起点が空欄
+                tx = item_list[11] + '：' + item_list[4] + '(' + item_list[2] + ')で' + \
+                                 item_list[5] + 'のため' + item_list[6]
+                traffic_list.append(tx)
+            else: #起点がある
+                tx = item_list[11] + '：' + item_list[3] + '→' + item_list[4] + \
+                                 '(' + item_list[2] + ')で' + \
+                                 item_list[5] + 'のため' + item_list[6]
+                traffic_list.append(tx)
 
-    if trafic_list: #規制があればトゥート内容を作る
-        toot_header = '【交通情報：' + code_text + '地方' + '(' + up_time + ')】\n'
-        toot_text = '\n'.join(trafic_list)
-        toot_text = toot_header + toot_text
-    #print(toot_text)
+    #print(traffic_list)
+    toot_header = '【交通情報：' + code_text + '地方' + '(' + up_time + ')】\n★★'
+
+    if mode == 0:
+        kisei = '通行止'
+    elif mode == 1:
+        kisei = '規制'
+    elif mode == 2:
+        kisei = '通行止と「規制中」'
+
+    if traffic_list: #規制があればトゥート内容を作る
+        toot_text = '\n'.join(traffic_list)
+        #print(toot_text)
+    else:
+        toot_text = '現在、' + kisei + 'はありません☆'
+
+    toot_text = toot_header + toot_text
+
     return toot_text
 
 
 #直接実行すると以下が実行される（モジュールとして読み込んだ場合は実行されない）
 if __name__ == '__main__': 
-    get_trafic('関東', 1)
+    print(
+        get_traffic('北海道', 2), '\n',
+        get_traffic('東北', 2), '\n',
+        get_traffic('関東', 2), '\n',
+        get_traffic('中部', 2), '\n',
+        get_traffic('北陸', 2), '\n',
+        get_traffic('近畿', 2), '\n',
+        get_traffic('中国', 2), '\n',
+        get_traffic('四国', 2), '\n',
+        get_traffic('九州', 2), '\n',
+        get_traffic('沖縄', 2), '\n',
+        get_traffic('その他', 2)        
+    )
     pass
