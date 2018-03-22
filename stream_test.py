@@ -114,21 +114,22 @@ def to_kiite(converted_text):
 
 
 # 道路交通情報
+def is_traffic(content: str):
+    return re.search(r"れてぃあ(?:たん)?(?:、)?(.+)[の]道路", content)
+
 def info_traffic(converted_text):
     toot_string = ''
-    tr = re.search(r"れてぃあ(?:たん)?(?:、)?(.+)[の]道路", converted_text)
+    tr = is_traffic(converted_text)
     if tr:
         tr_tx = tr.group(1)
         print('TRAFFIC:', tr_tx)
-        toot_string = traffic.get_traffic(tr_tx, 2) 
+        toot_string = traffic.get_traffic(tr_tx, 2)
 
         if len(toot_string) > 490:
             toot_str_list = [toot_string[i: i+490] for i in range(0, len(toot_string), 490)]
             toot_string = toot_str_list[0] + '\n#れてぃあたん'
-            return toot_string
         else:
             toot_string = toot_string + '\n#れてぃあたん'
-            return toot_string
         return toot_string
 
 
@@ -173,8 +174,10 @@ def nani_youbi(converted_text):
     random.seed(nowyobi.weekday())
     y = random.randint(0,6)
     if is_youbi(converted_text):
+        print('WeekDay:', y)
         toot_string = youbi[y] + '曜日だよ☆　#れてぃあたん'
     else:
+        print('WeekDay: No Match')
         toot_string = ''
     return toot_string
 
@@ -291,10 +294,11 @@ class MyStreamListener(StreamListener):
             my_next_toot = nani_youbi(tl_cont)
         elif to_kiite(tl_cont) != '': #〇〇と聞いて
             my_next_toot = to_kiite(tl_cont)
-        elif info_traffic(tl_cont) != '': #道路交通情報
+        elif is_traffic(tl_cont): #道路交通情報
             #my_next_list = info_traffic(tl_cont).split('★')
             #spo_text = my_next_list[0]
             #my_next_toot = my_next_list[1]
+            print(my_next_toot)
             my_next_toot = info_traffic(tl_cont)
         elif retikawa(tl_cont, tl_display_name) != '': #れてぃあたんかわいい
             my_next_toot = retikawa(tl_cont, tl_display_name)
@@ -305,6 +309,7 @@ class MyStreamListener(StreamListener):
                 my_next_toot = '@' + mention_acct + ' ' + retia_mention(tl_cont, tl_display_name, '')
         elif retia_tan(tl_cont) != '': #れてぃあたんを呼んだ場合
             my_next_toot = retia_tan(tl_cont)
+
 
 
         #生成した内容が過去トゥーと一致したらトゥーしない
@@ -419,13 +424,11 @@ class MyUserListener(StreamListener):
             my_next_toot = '@' + mention_acct + ' ' + nani_youbi(tl_cont)
         elif to_kiite(tl_cont) != '': #〇〇と聞いて
             my_next_toot = '@' + mention_acct + ' ' + to_kiite(tl_cont)
-        """
-        elif info_traffic(tl_cont) != '': #道路交通情報
+        #elif info_traffic(tl_cont) != '': #道路交通情報
             #my_next_list = info_traffic(tl_cont).split('\n',1)
             #spo_text = my_next_list[0]
             #my_next_toot = my_next_list[1]
-            my_next_toot =  '@' + mention_acct + ' ' + info_traffic(tl_cont)
-        """
+        #    my_next_toot =  '@' + mention_acct + ' ' + info_traffic(tl_cont) 
         elif retikawa(tl_cont, tl_display_name) != '': #れてぃあたんかわいい
             my_next_toot = '@' + mention_acct + ' ' + retikawa(tl_cont, tl_display_name)
         elif not_retikawa(tl_cont, tl_display_name) != '': #れてぃあたん可愛くない
