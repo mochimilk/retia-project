@@ -5,20 +5,23 @@ import random
 import json
 import datetime
 import threading
+import time
 
-#from mymod import traffic
 import traffic
-#import urllib.request
 
 
 global mastodon
 
+#たぶんグローバルな変数
 MyUserName = 'v_idol_retia' #自分のusername
 tag_cutter = re.compile(r"<[^>]*?>") #htmlタグ許すまじ
 display_name_cutter = re.compile(r"(?:@|#|http.*:\/\/)") #display_nameでのいたずら防止
 tl_list = [] #重複チェック用キャッシュ
 dupli_count = 3 #重複チェックカウンター（キャッシュに取り込むトゥート数）
 
+
+#----------------------------
+#ここから関数
 
 # botの投稿に反応しない
 def is_bot(app):
@@ -77,7 +80,7 @@ def retia_mention(content, mention_d_name, mention_type):
     random.seed()
     tx = ''
     if mention_type != '': #notification['type']が空＝LTLに表示されるメンションの場合
-        tx_list = ['いまかわいいって言った？　#れてぃあたん', 'どしたの？　#れてぃあたん', 'それはダメだよ？　#れてぃあたん','なになに？　#れてぃあたん']
+        tx_list = ['いまかわいいって言った？', 'どしたの？', 'それはダメだよ？','なになに？']
         tx = random.choice(tx_list)
     return tx
 
@@ -90,7 +93,7 @@ def babu_haibu(converted_text):
     toot_string = ''
     if is_babu(converted_text):
         print('BBCK: 廃部')
-        toot_string = 'バ部は廃部　#れてぃあたん'
+        toot_string = 'バ部は廃部'
     else:
         print('BBCK: No Babu')
         toot_string = ''
@@ -106,7 +109,7 @@ def to_kiite(converted_text):
     mKiite = is_kiite(converted_text)
     if mKiite:
         print('KiiteCK: 聞こえた')
-        toot_string = mKiite.group() + 'と聞いて　#れてぃあたん'
+        toot_string = mKiite.group() + 'と聞いて'
     else:
         print('KiiteCK: No Match')
         toot_string = ''
@@ -117,20 +120,24 @@ def to_kiite(converted_text):
 def is_traffic(content: str):
     return re.search(r"れてぃあ(?:たん)?(?:、)?(.+)[の]道路", content)
 
-def info_traffic(converted_text):
+def info_traffic(converted_text, u_name):
+    time.sleep(1)
+    toot_spo_string = ''
     toot_string = ''
     tr = is_traffic(converted_text)
     if tr:
         tr_tx = tr.group(1)
         print('TRAFFIC:', tr_tx)
-        toot_string = traffic.get_traffic(tr_tx, 2)
+        #toot_string = traffic.get_traffic(tr_tx, 2)
+        toot_spo_string, toot_string = traffic.get_traffic(tr_tx, 2)
 
-        if len(toot_string) > 490:
-            toot_str_list = [toot_string[i: i+490] for i in range(0, len(toot_string), 490)]
-            toot_string = toot_str_list[0] + '\n#れてぃあたん'
+        if len(toot_string) > 450:
+            toot_str_list = [toot_string[i: i+450] for i in range(0, len(toot_string), 450)]
+            toot_string = '@' + u_name + ' ' + toot_str_list[0]
         else:
-            toot_string = toot_string + '\n#れてぃあたん'
-        return toot_string
+            toot_string = '@' + u_name + ' ' + toot_string
+        #return toot_string
+        return toot_spo_string, toot_string
 
 
 # 〇〇さんかわいい
@@ -141,7 +148,7 @@ def oo_kawaii(converted_text, usr_name):
     toot_string = ''
     if is_kawaii(converted_text):
         print('KawaiiCK: かわいい')
-        toot_string = usr_name + 'かわいい☆　#れてぃあたん'
+        toot_string = usr_name + 'かわいい☆'
     else:
         print('KawaiiCK: No Sweetie')
         toot_string = ''
@@ -156,7 +163,7 @@ def oo_ecchi(converted_text, usr_name):
     toot_string = ''
     if is_ecchi(converted_text):
         print('HCK: えっち')
-        toot_string = usr_name + 'のえっち・・・　#れてぃあたん'
+        toot_string = usr_name + 'のえっち・・・'
     else:
         print('HCK: No Ecchi')
         toot_string = ''
@@ -175,7 +182,7 @@ def nani_youbi(converted_text):
     y = random.randint(0,6)
     if is_youbi(converted_text):
         print('WeekDay:', y)
-        toot_string = youbi[y] + '曜日だよ☆　#れてぃあたん'
+        toot_string = youbi[y] + '曜日だよ☆'
     else:
         print('WeekDay: No Match')
         toot_string = ''
@@ -193,7 +200,7 @@ def retikawa(converted_text, usr_name):
     tx = random.choice(tx_list)
     if is_retikawa(converted_text):
         print('RetiKawaCK: 大好き')
-        toot_string = usr_name + tx + '　#れてぃあたん'
+        toot_string = usr_name + tx
     else:
         print('RetiKawaCK: Zenzen Sweetie Janai')
         toot_string = ''
@@ -211,7 +218,7 @@ def not_retikawa(converted_text, usr_name):
     tx = random.choice(tx_list)
     if is_not_retikawa(converted_text):
         print('NoRetiKawaCK: 爆破')
-        toot_string = 'ちょっと' + usr_name + tx + '　#れてぃあたん'
+        toot_string = 'ちょっと' + usr_name + tx
     else:
         print('NoRetiKawaCK: Sweetie')
         toot_string = ''
@@ -223,11 +230,23 @@ def retia_tan(converted_text):
     toot_string = ''
     if converted_text.find("れてぃあたん") >= 0:
         print('RetiaCK: 呼んだ？')
-        toot_string = '呼んだ？　#れてぃあたん'
+        toot_string = '呼んだ？'
     else:
         print('RetiaCK: No Retia')
         toot_string = ''
     return toot_string
+
+
+# ■■ タイマーのテスト
+def timer(ti):
+    d_timer = 1
+    while True:
+        time.sleep(1)
+        #print(d_timer)
+        d_timer = d_timer + 1
+        if d_timer > ti:
+            d_timer = 0
+            print('* DUPLICATE_TOOT_RESET *')
 
 
 # ■■ ローカルタイムラインのストリーム取得
@@ -245,6 +264,7 @@ class MyStreamListener(StreamListener):
 
 
     def on_update(self, status):
+        toot_visibl = 'public'
         tl_cont = tag_cutter.sub("", status['content'])
         tl_display_name = display_name_cutter.sub("☆", status['account']['display_name'])
         tl_display_name = convert_nick(status['account']['username'], tl_display_name) #ニックネーム
@@ -261,6 +281,7 @@ class MyStreamListener(StreamListener):
 
         #重複チェック用自分の投稿キャッシュ
         if status['account']['username'] == MyUserName:
+            tl_cont = tl_cont.replace('　#れてぃあたん','')
             tl_list.append(tl_cont)
             if len(tl_list) > dupli_count:
                 tl_list.pop(0)
@@ -295,11 +316,13 @@ class MyStreamListener(StreamListener):
         elif to_kiite(tl_cont) != '': #〇〇と聞いて
             my_next_toot = to_kiite(tl_cont)
         elif is_traffic(tl_cont): #道路交通情報
+            #spo_text, my_next_toot = info_traffic(tl_cont)
+            spo_text, my_next_toot = info_traffic(tl_cont, status['account']['username'])
+            toot_visibl = 'unlisted'
             #my_next_list = info_traffic(tl_cont).split('★')
             #spo_text = my_next_list[0]
             #my_next_toot = my_next_list[1]
-            print(my_next_toot)
-            my_next_toot = info_traffic(tl_cont)
+            #my_next_toot = info_traffic(tl_cont)
         elif retikawa(tl_cont, tl_display_name) != '': #れてぃあたんかわいい
             my_next_toot = retikawa(tl_cont, tl_display_name)
         elif not_retikawa(tl_cont, tl_display_name) != '': #れてぃあたん可愛くない
@@ -311,7 +334,6 @@ class MyStreamListener(StreamListener):
             my_next_toot = retia_tan(tl_cont)
 
 
-
         #生成した内容が過去トゥーと一致したらトゥーしない
         #何も生成してない場合もトゥーしない
         print('Next:', my_next_toot)
@@ -321,13 +343,13 @@ class MyStreamListener(StreamListener):
             my_next_toot = ''
         elif my_next_toot == '':
             print('TOOT: No Toot.')
-            my_next_toot = ''
+            #my_next_toot = ''
         else:
             print('TOOT: Toot OK.', mention_to_id, '/', mention_acct)
             mastodon.status_post(
-                status = my_next_toot,
+                status = my_next_toot + '　#れてぃあたん',
                 in_reply_to_id = mention_to_id,
-                visibility = 'public',
+                visibility = toot_visibl,
                 spoiler_text = spo_text
             )
         pass
@@ -374,6 +396,7 @@ class MyUserListener(StreamListener):
 
 
     def on_notification(self, notification):
+        toot_visibl = 'public'
         tl_cont = tag_cutter.sub("", notification['status']['content'])
         tl_display_name = display_name_cutter.sub("☆", notification['account']['display_name'])
         tl_display_name = convert_nick(notification['account']['username'], tl_display_name) #ニックネーム
@@ -390,6 +413,7 @@ class MyUserListener(StreamListener):
 
         #重複チェック用自分の投稿キャッシュ
         if notification['account']['username'] == MyUserName:
+            tl_cont = tl_cont.replace('　#れてぃあたん','')
             tl_list.append(tl_cont)
             if len(tl_list) > dupli_count:
                 tl_list.pop(0)
@@ -428,7 +452,7 @@ class MyUserListener(StreamListener):
             #my_next_list = info_traffic(tl_cont).split('\n',1)
             #spo_text = my_next_list[0]
             #my_next_toot = my_next_list[1]
-        #    my_next_toot =  '@' + mention_acct + ' ' + info_traffic(tl_cont) 
+        #    my_next_toot =  '@' + mention_acct + ' ' + info_traffic(tl_cont)
         elif retikawa(tl_cont, tl_display_name) != '': #れてぃあたんかわいい
             my_next_toot = '@' + mention_acct + ' ' + retikawa(tl_cont, tl_display_name)
         elif not_retikawa(tl_cont, tl_display_name) != '': #れてぃあたん可愛くない
@@ -446,15 +470,16 @@ class MyUserListener(StreamListener):
             my_next_toot = ''
         elif my_next_toot == '':
             print('TOOT_MENTION: No Toot.')
-            my_next_toot = ''
+            #my_next_toot = ''
         else:
             print('TOOT_MENTION: Toot OK.', mention_to_id, '/', mention_acct)
             mastodon.status_post(
-                status = my_next_toot,
+                status = my_next_toot + '　#れてぃあたん',
                 in_reply_to_id = mention_to_id,
-                visibility = 'public'
+                visibility = toot_visibl
             )
         pass
+
 
 
 # StreamListenerクラスを作る
