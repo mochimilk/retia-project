@@ -59,7 +59,9 @@ def get_traffic(code_text, mode=0):
                  '沖縄':'1010'} 
 
     if code_text not in code_dict.keys():
-        return toot_text
+        #toot_text = '★'
+        #return toot_text
+        return toot_header, toot_text
 
     code = code_dict[code_text]
     url_jar = 'http://www.jartic.or.jp/_json/M_' + code + '_301.json?dummy=0'
@@ -120,7 +122,8 @@ def get_traffic(code_text, mode=0):
                 traffic_list.append(tx)
 
     #print(traffic_list)
-    toot_header = '【交通情報：' + code_text + '地方' + '(' + up_time + ')】\n★★'
+    #toot_header = '【交通情報：' + code_text + '地方' + '(' + up_time + ')】\n★'
+    toot_header = '【交通情報：' + code_text + '地方' + '(' + up_time + ')】\n'
 
     if mode == 0:
         kisei = '通行止'
@@ -135,9 +138,10 @@ def get_traffic(code_text, mode=0):
     else:
         toot_text = '現在、' + kisei + 'はありません☆'
 
-    toot_text = toot_header + toot_text
+    #toot_text = toot_header + toot_text
 
-    return toot_text
+    #return toot_text
+    return toot_header, toot_text
 
 
 #直接実行すると以下が実行される（モジュールとして読み込んだ場合は実行されない）
