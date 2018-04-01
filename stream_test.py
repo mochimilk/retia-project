@@ -38,6 +38,7 @@ def is_bot(app):
         '漣ちゃん',
         'Cordelia',
         'Yuki',
+        'キリ番bot',
         'nekonyanApp'
     ] 
 
@@ -120,7 +121,7 @@ def to_kiite(converted_text):
 def is_traffic(content: str):
     return re.search(r"れてぃあ(?:たん)?(?:、)?(.+)[の]道路", content)
 
-def info_traffic(converted_text, u_name):
+def info_traffic(converted_text):
     time.sleep(1)
     toot_spo_string = ''
     toot_string = ''
@@ -128,21 +129,14 @@ def info_traffic(converted_text, u_name):
     if tr:
         tr_tx = tr.group(1)
         print('TRAFFIC:', tr_tx)
-        #toot_string = traffic.get_traffic(tr_tx, 2)
         toot_spo_string, toot_string = traffic.get_traffic(tr_tx, 2)
 
-        if len(toot_string) > 450:
-            toot_str_list = [toot_string[i: i+450] for i in range(0, len(toot_string), 450)]
-            toot_string = '@' + u_name + ' ' + toot_str_list[0]
-        else:
-            toot_string = '@' + u_name + ' ' + toot_string
-        #return toot_string
-        return toot_spo_string, toot_string
+    return toot_spo_string, toot_string
 
 
 # 〇〇さんかわいい
 def is_kawaii(content: str) -> bool:
-    return bool(re.search(r".+(?!時間)(?:とき|時).+るから|(おしゅし)|((?:た|だ)けどね.?？$)|(なんちゃって.?$)|.+(ましゅ.+)$|.+(しゅき).*$", content))
+    return bool(re.search(r".+(?!時間)(?:とき|時).+るから|(おしゅし)|((?:た|だ)けどね.?？$)|(なんちゃって.?$)|(てへ.?$)|.+(ましゅ.+)$|.+(しゅき).*$", content))
 
 def oo_kawaii(converted_text, usr_name):
     toot_string = ''
@@ -196,7 +190,7 @@ def is_retikawa(content: str) -> bool:
 def retikawa(converted_text, usr_name):
     random.seed()
     toot_string = ''
-    tx_list = ['大好き☆','ありがと☆','・・・☆','のほうがかわいいよ☆',]
+    tx_list = ['大好き☆','ありがと☆','・・・☆','のほうがかわいいよ☆']
     tx = random.choice(tx_list)
     if is_retikawa(converted_text):
         print('RetiKawaCK: 大好き')
@@ -209,12 +203,12 @@ def retikawa(converted_text, usr_name):
 
 # れてぃあたんかわいくない⇒怒り
 def is_not_retikawa(content: str) -> bool:
-    return bool(re.search(r"(れてぃあ(?:たん)?[は]?)(?:(?:かわいく|可愛いく|美人|すてき|素敵)[ではじゃ]?ない)", content))
+    return bool(re.search(r"(れてぃあ(?:たん)?[は]?)(?:(?:かわいく|かわいいく|可愛いく|可愛く|美人|すてき|素敵)[ではじゃ]?ない|ブス|不細工|ブサイク)", content))
 
 def not_retikawa(converted_text, usr_name):
     random.seed()
     toot_string = ''
-    tx_list = ['爆破してくるね☆','・・・','にブロッコリー刺してくる☆',]
+    tx_list = ['爆破してくるね☆','・・・','にブロッコリー刺してくる☆','を（自主規制）してくる☆']
     tx = random.choice(tx_list)
     if is_not_retikawa(converted_text):
         print('NoRetiKawaCK: 爆破')
@@ -249,7 +243,7 @@ def timer(ti):
             print('* DUPLICATE_TOOT_RESET *')
 
 
-# ■■ ローカルタイムラインのストリーム取得
+# ■■■■■■■■ ローカルタイムラインのストリーム取得
 class MyStreamListener(StreamListener):
     def __init__(self):
         super(MyStreamListener, self).__init__()
@@ -316,13 +310,11 @@ class MyStreamListener(StreamListener):
         elif to_kiite(tl_cont) != '': #〇〇と聞いて
             my_next_toot = to_kiite(tl_cont)
         elif is_traffic(tl_cont): #道路交通情報
-            #spo_text, my_next_toot = info_traffic(tl_cont)
-            spo_text, my_next_toot = info_traffic(tl_cont, status['account']['username'])
-            toot_visibl = 'unlisted'
-            #my_next_list = info_traffic(tl_cont).split('★')
-            #spo_text = my_next_list[0]
-            #my_next_toot = my_next_list[1]
-            #my_next_toot = info_traffic(tl_cont)
+            spo_text, my_next_toot = info_traffic(tl_cont)
+            if my_next_toot != '':
+                my_next_toot = '@' + status['account']['username'] + ' ' + my_next_toot
+                toot_visibl = 'unlisted'
+                mention_to_id = status['id']
         elif retikawa(tl_cont, tl_display_name) != '': #れてぃあたんかわいい
             my_next_toot = retikawa(tl_cont, tl_display_name)
         elif not_retikawa(tl_cont, tl_display_name) != '': #れてぃあたん可愛くない
@@ -333,6 +325,10 @@ class MyStreamListener(StreamListener):
         elif retia_tan(tl_cont) != '': #れてぃあたんを呼んだ場合
             my_next_toot = retia_tan(tl_cont)
 
+        #500文字超えそうなときの処理
+        if len(my_next_toot) > 430:
+            my_next_list = [my_next_toot[i: i+430] for i in range(0, len(my_next_toot), 430)]
+            my_next_toot = my_next_list[0] + '文字数'
 
         #生成した内容が過去トゥーと一致したらトゥーしない
         #何も生成してない場合もトゥーしない
@@ -369,7 +365,7 @@ class MyStreamListener(StreamListener):
         pass
 
 
-# ■■ ホームタイムラインのストリーム取得
+# ■■■■■■■■ ホームタイムラインのストリーム取得
 class MyUserListener(StreamListener):
     def __init__(self):
         super(MyUserListener, self).__init__()
@@ -430,6 +426,7 @@ class MyUserListener(StreamListener):
 
         #トゥー内容初期化
         my_next_toot = ''
+        spo_text = ''
 
         #トゥー生成
         if notification['type'] != 'mention': #メンション以外の通知は何もしない
@@ -439,28 +436,31 @@ class MyUserListener(StreamListener):
         elif notification['status']['spoiler_text'] != '': #CWなら反応しない
             my_next_toot = ''
         elif babu_haibu(tl_cont) != '': #バ部は廃部
-            my_next_toot = '@' + mention_acct + ' ' + babu_haibu(tl_cont)
+            my_next_toot = babu_haibu(tl_cont)
         elif oo_kawaii(tl_cont, tl_display_name) != '': #〇〇さんかわいい
-            my_next_toot = '@' + mention_acct + ' ' + oo_kawaii(tl_cont, tl_display_name)
+            my_next_toot = oo_kawaii(tl_cont, tl_display_name)
         elif oo_ecchi(tl_cont, tl_display_name) != '': #〇〇さんえっち
-            my_next_toot = '@' + mention_acct + ' ' + oo_ecchi(tl_cont, tl_display_name)
+            my_next_toot = oo_ecchi(tl_cont, tl_display_name)
         elif nani_youbi(tl_cont) != '': #何曜日
-            my_next_toot = '@' + mention_acct + ' ' + nani_youbi(tl_cont)
+            my_next_toot = nani_youbi(tl_cont)
         elif to_kiite(tl_cont) != '': #〇〇と聞いて
-            my_next_toot = '@' + mention_acct + ' ' + to_kiite(tl_cont)
-        #elif info_traffic(tl_cont) != '': #道路交通情報
-            #my_next_list = info_traffic(tl_cont).split('\n',1)
-            #spo_text = my_next_list[0]
-            #my_next_toot = my_next_list[1]
-        #    my_next_toot =  '@' + mention_acct + ' ' + info_traffic(tl_cont)
+            my_next_toot = to_kiite(tl_cont)
+        elif is_traffic(tl_cont): #道路交通情報
+            spo_text, my_next_toot = info_traffic(tl_cont)
+            toot_visibl = 'unlisted'
         elif retikawa(tl_cont, tl_display_name) != '': #れてぃあたんかわいい
-            my_next_toot = '@' + mention_acct + ' ' + retikawa(tl_cont, tl_display_name)
+            my_next_toot = retikawa(tl_cont, tl_display_name)
         elif not_retikawa(tl_cont, tl_display_name) != '': #れてぃあたん可愛くない
-            my_next_toot = '@' + mention_acct + ' ' + not_retikawa(tl_cont, tl_display_name)
+            my_next_toot = not_retikawa(tl_cont, tl_display_name)
         elif mention_to_id != '': #通知に表示されるメンションに対する反応
-            my_next_toot = '@' + mention_acct + ' ' + retia_mention(tl_cont, tl_display_name, notification['type'])
+            my_next_toot = retia_mention(tl_cont, tl_display_name, notification['type'])
         elif retia_tan(tl_cont) != '': #れてぃあたんを呼んだ場合
-            my_next_toot = '@' + mention_acct + ' ' + retia_tan(tl_cont)
+            my_next_toot = retia_tan(tl_cont)
+
+        #500文字超えそうなときの処理
+        if len(my_next_toot) > 430:
+            my_next_list = [my_next_toot[i: i+430] for i in range(0, len(my_next_toot), 430)]
+            my_next_toot = my_next_list[0] + '文字数'
 
         #生成した内容が過去トゥーと一致したらトゥーしない
         #何も生成してない場合もトゥーしない
@@ -474,9 +474,10 @@ class MyUserListener(StreamListener):
         else:
             print('TOOT_MENTION: Toot OK.', mention_to_id, '/', mention_acct)
             mastodon.status_post(
-                status = my_next_toot + '　#れてぃあたん',
+                status = '@' + mention_acct + ' ' + my_next_toot + '　#れてぃあたん',
                 in_reply_to_id = mention_to_id,
-                visibility = toot_visibl
+                visibility = toot_visibl,
+                spoiler_text = spo_text
             )
         pass
 
