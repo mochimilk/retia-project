@@ -219,6 +219,44 @@ def not_retikawa(converted_text, usr_name):
     return toot_string
 
 
+# ありがとう、大好き
+def is_arigato(content: str) -> bool:
+    return bool(re.search(r"(れてぃあ(?:たん)?[、]?(?:大好き|ありがと[う]?))", content))
+
+def arigato(converted_text, usr_name):
+    random.seed()
+    toot_string = ''
+    tx_list = ['、どういたしまして☆','、いえいえそれほどでも☆']
+    tx = random.choice(tx_list)
+    if is_arigato(converted_text):
+        print('ArigatoCK: ありがと')
+        toot_string = usr_name + tx
+    else:
+        print('ArigatoCK: No')
+        toot_string = ''
+    return toot_string
+
+
+# おすすめ商品
+def is_osusume(content: str) -> bool:
+    return bool(re.search(r"^(@v_idol_retia )?(おすすめ|オススメ)$", content))
+
+def osusume(converted_text):
+    random.seed()
+    toot_string = ''
+    f = open('osusume.txt', encoding='utf-8')
+    tx_list = f.readlines()
+    tx = random.choice(tx_list).rstrip('\n')
+    f.close()
+    if is_osusume(converted_text):
+        print('OsusumeCK: おすすめ')
+        toot_string = tx
+    else:
+        print('OsusumeCK: No Osusume')
+        toot_string = ''
+    return toot_string
+
+
 # れてぃあたん
 def retia_tan(converted_text):
     toot_string = ''
@@ -315,6 +353,10 @@ class MyStreamListener(StreamListener):
                 my_next_toot = '@' + status['account']['username'] + ' ' + my_next_toot
                 toot_visibl = 'unlisted'
                 mention_to_id = status['id']
+        elif arigato(tl_cont, tl_display_name) != '': #ありがと
+            my_next_toot = arigato(tl_cont, tl_display_name)
+        elif osusume(tl_cont) != '': #おすすめ
+            my_next_toot = osusume(tl_cont)
         elif retikawa(tl_cont, tl_display_name) != '': #れてぃあたんかわいい
             my_next_toot = retikawa(tl_cont, tl_display_name)
         elif not_retikawa(tl_cont, tl_display_name) != '': #れてぃあたん可愛くない
@@ -448,6 +490,10 @@ class MyUserListener(StreamListener):
         elif is_traffic(tl_cont): #道路交通情報
             spo_text, my_next_toot = info_traffic(tl_cont)
             toot_visibl = 'unlisted'
+        elif arigato(tl_cont, tl_display_name) != '': #ありがと
+            my_next_toot = arigato(tl_cont, tl_display_name)
+        elif osusume(tl_cont) != '': #おすすめ
+            my_next_toot = osusume(tl_cont)
         elif retikawa(tl_cont, tl_display_name) != '': #れてぃあたんかわいい
             my_next_toot = retikawa(tl_cont, tl_display_name)
         elif not_retikawa(tl_cont, tl_display_name) != '': #れてぃあたん可愛くない
