@@ -26,6 +26,6 @@
 九州
 沖縄
 
-http://www.jartic.or.jp/
+道路情報提供：　http://www.jartic.or.jp/
 
 ・マストドンのストリーミングが切断された場合、定時トゥート以外の機能は停止
