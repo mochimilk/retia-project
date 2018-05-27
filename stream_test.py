@@ -88,7 +88,7 @@ def retia_mention(content, mention_d_name, mention_type):
 
 # バ部は廃部
 def is_babu(content: str) -> bool:
-    return bool(re.search(r"ママー+[ッ!！]", content))
+    return bool(re.search(r"ママー+[ーッ!！]", content))
 
 def babu_haibu(converted_text):
     toot_string = ''
@@ -103,7 +103,7 @@ def babu_haibu(converted_text):
 
 # 〇〇と聞いて
 def is_kiite(content: str):
-    return re.search(r"(ダーツ)|(カラオケ)|(女装)|(男装)|((?:奢|おご)[りる])|(メイド)|(お(?:ねえ|姉|ねー)ちゃん)|((?:可愛い|かわいい)[女男]の[子娘])|(彼[女氏][ぁ-んァ-ン０-９0-9人金円万画像、。]*[ほ欲]しい)", content)
+    return re.search(r"ダーツ|カラオケ|[女男]装|((?:奢|おご)[りる])|(?<!オーダー|カスタム)メイド|お(?:ねえ|姉|ねー)ちゃん|(?:可愛い|かわいい|カワイイ)[女男]の[子娘]|彼[女氏][ぁ-んァ-ン０-９0-9人金円万画像、。]*?[ほ欲]しい|ニーソ|ニーハイ", content)
 
 def to_kiite(converted_text):
     toot_string = ''
@@ -172,7 +172,7 @@ def nani_youbi(converted_text):
     toot_string = ''
     youbi = ["月","火","水","木","金","土","日"]
     nowyobi = datetime.date.today()
-    random.seed(nowyobi.weekday())
+    random.seed(nowyobi)
     y = random.randint(0,6)
     if is_youbi(converted_text):
         print('WeekDay:', y)
@@ -269,6 +269,12 @@ def retia_tan(converted_text):
     return toot_string
 
 
+# ■■ NGワード
+def convert_ng(converted_text):
+    toot_string = re.sub(r"ぬるぽ|NullPointerException|>>[0-9]+|[0-9]+d[0-9]+|xxxxxxxx", "（自主規制）", converted_text)
+    return toot_string
+
+
 # ■■ タイマーのテスト
 def timer(ti):
     d_timer = 1
@@ -339,14 +345,18 @@ class MyStreamListener(StreamListener):
             my_next_toot = ''
         elif babu_haibu(tl_cont) != '': #バ部は廃部
             my_next_toot = babu_haibu(tl_cont)
+            #mention_to_id = status['id']
         elif oo_kawaii(tl_cont, tl_display_name) != '': #〇〇さんかわいい
             my_next_toot = oo_kawaii(tl_cont, tl_display_name)
+            #mention_to_id = status['id']
         elif oo_ecchi(tl_cont, tl_display_name) != '': #〇〇さんえっち
             my_next_toot = oo_ecchi(tl_cont, tl_display_name)
+            #mention_to_id = status['id']
         elif nani_youbi(tl_cont) != '': #何曜日
             my_next_toot = nani_youbi(tl_cont)
         elif to_kiite(tl_cont) != '': #〇〇と聞いて
             my_next_toot = to_kiite(tl_cont)
+            #mention_to_id = status['id']
         elif is_traffic(tl_cont): #道路交通情報
             spo_text, my_next_toot = info_traffic(tl_cont)
             if my_next_toot != '':
@@ -371,6 +381,9 @@ class MyStreamListener(StreamListener):
         if len(my_next_toot) > 430:
             my_next_list = [my_next_toot[i: i+430] for i in range(0, len(my_next_toot), 430)]
             my_next_toot = my_next_list[0] + '文字数'
+
+        #NGワードは処理する
+        my_next_toot = convert_ng(my_next_toot)
 
         #生成した内容が過去トゥーと一致したらトゥーしない
         #何も生成してない場合もトゥーしない
@@ -508,6 +521,9 @@ class MyUserListener(StreamListener):
             my_next_list = [my_next_toot[i: i+430] for i in range(0, len(my_next_toot), 430)]
             my_next_toot = my_next_list[0] + '文字数'
 
+        #NGワードは処理する
+        my_next_toot = convert_ng(my_next_toot)
+
         #生成した内容が過去トゥーと一致したらトゥーしない
         #何も生成してない場合もトゥーしない
         print('Next_MENTION:', my_next_toot)
@@ -528,7 +544,6 @@ class MyUserListener(StreamListener):
         pass
 
 
-
 # StreamListenerクラスを作る
 class LTL():
     def __init__(self):
@@ -546,6 +561,7 @@ class HTL():
     def t_home():
         listener = MyUserListener()
         mastodon.stream_user(listener)
+
 
 
 # ★メインの処理
