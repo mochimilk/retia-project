@@ -248,7 +248,7 @@ def is_osusume(content: str) -> bool:
 def osusume(converted_text):
     random.seed()
     toot_string = ''
-    f = open('/home/hot.uniuni/mstdn-bot/osusume.txt', encoding='utf-8')
+    f = open('osusume.txt', encoding='utf-8')
     tx_list = f.readlines()
     tx = random.choice(tx_list).rstrip('\n')
     f.close()
