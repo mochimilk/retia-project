@@ -13,7 +13,7 @@ import traffic
 global mastodon
 
 #たぶんグローバルな変数
-MyUserName = 'v_idol_retia' #自分のusername
+MyUserName = 'retia_prototype' #自分のusername
 tag_cutter = re.compile(r"<[^>]*?>") #htmlタグ許すまじ
 display_name_cutter = re.compile(r"(?:@|#|http.*:\/\/)") #display_nameでのいたずら防止
 tl_list = [] #重複チェック用キャッシュ
@@ -35,6 +35,7 @@ def is_bot(app):
         '色bot',
         'ダイスbot',
         'VRれてぃあ',
+        'VRれてぃあ - prototype -',
         '漣ちゃん',
         'Cordelia',
         'Yuki',
@@ -48,7 +49,7 @@ def is_bot(app):
 
 #ニックネーム機能
 def convert_nick(u_name, d_name):
-    f = open('nickname_list.json', 'r', encoding = 'utf-8')
+    f = open('/home/hot.uniuni/mstdn-bot/nickname_list.json', 'r', encoding = 'utf-8')
     nick_dict = json.load(f)
     nickname = ''
 
@@ -57,6 +58,9 @@ def convert_nick(u_name, d_name):
             for i in range(1,random.randint(2, 16)):
                 nickname = nickname + 'お'
             nickname = nickname + 'さん'
+        elif u_name == 'pina_32':
+            nickname = random.choice['ぱ','ぴ','ぷ','ぺ','ぽ']
+            nickname = random.choice(pi) + 'なさん'
         else:
             nickname = nick_dict[u_name]
     else:
@@ -93,10 +97,10 @@ def is_babu(content: str) -> bool:
 def babu_haibu(converted_text):
     toot_string = ''
     if is_babu(converted_text):
-        print('BBCK: 廃部')
+        print('BabuCK: Yes')
         toot_string = 'バ部は廃部'
     else:
-        print('BBCK: No Babu')
+        print('BabuCK: No Babu')
         toot_string = ''
     return toot_string
 
@@ -112,7 +116,7 @@ def to_kiite(converted_text):
         print('KiiteCK: 聞こえた')
         toot_string = mKiite.group() + 'と聞いて'
     else:
-        print('KiiteCK: No Match')
+        print('KiiteCK: No')
         toot_string = ''
     return toot_string
 
@@ -144,7 +148,7 @@ def oo_kawaii(converted_text, usr_name):
         print('KawaiiCK: かわいい')
         toot_string = usr_name + 'かわいい☆'
     else:
-        print('KawaiiCK: No Sweetie')
+        print('KawaiiCK: No')
         toot_string = ''
     return toot_string
 
@@ -159,7 +163,7 @@ def oo_ecchi(converted_text, usr_name):
         print('HCK: えっち')
         toot_string = usr_name + 'のえっち・・・'
     else:
-        print('HCK: No Ecchi')
+        print('HCK: No')
         toot_string = ''
     return toot_string
 
@@ -178,7 +182,7 @@ def nani_youbi(converted_text):
         print('WeekDay:', y)
         toot_string = youbi[y] + '曜日だよ☆'
     else:
-        print('WeekDay: No Match')
+        print('WeekDay: No')
         toot_string = ''
     return toot_string
 
@@ -196,7 +200,7 @@ def retikawa(converted_text, usr_name):
         print('RetiKawaCK: 大好き')
         toot_string = usr_name + tx
     else:
-        print('RetiKawaCK: Zenzen Sweetie Janai')
+        print('RetiKawaCK: No')
         toot_string = ''
     return toot_string
 
@@ -214,7 +218,7 @@ def not_retikawa(converted_text, usr_name):
         print('NoRetiKawaCK: 爆破')
         toot_string = 'ちょっと' + usr_name + tx
     else:
-        print('NoRetiKawaCK: Sweetie')
+        print('NoRetiKawaCK: No')
         toot_string = ''
     return toot_string
 
@@ -239,12 +243,12 @@ def arigato(converted_text, usr_name):
 
 # おすすめ商品
 def is_osusume(content: str) -> bool:
-    return bool(re.search(r"^(@v_idol_retia )?(おすすめ|オススメ)$", content))
+    return bool(re.search(r"^(@retia_prototype )?(おすすめ|オススメ)$", content))
 
 def osusume(converted_text):
     random.seed()
     toot_string = ''
-    f = open('osusume.txt', encoding='utf-8')
+    f = open('/home/hot.uniuni/mstdn-bot/osusume.txt', encoding='utf-8')
     tx_list = f.readlines()
     tx = random.choice(tx_list).rstrip('\n')
     f.close()
@@ -252,7 +256,7 @@ def osusume(converted_text):
         print('OsusumeCK: おすすめ')
         toot_string = tx
     else:
-        print('OsusumeCK: No Osusume')
+        print('OsusumeCK: No')
         toot_string = ''
     return toot_string
 
@@ -264,14 +268,14 @@ def retia_tan(converted_text):
         print('RetiaCK: 呼んだ？')
         toot_string = '呼んだ？'
     else:
-        print('RetiaCK: No Retia')
+        print('RetiaCK: No')
         toot_string = ''
     return toot_string
 
 
 # ■■ NGワード
 def convert_ng(converted_text):
-    toot_string = re.sub(r"ぬるぽ|NullPointerException|>>[0-9]+|[0-9]+d[0-9]+|xxxxxxxx", "（自主規制）", converted_text)
+    toot_string = re.sub(r"ぬるぽ|NullPointerException|>>[0-9]+|[0-9]+d[0-9]+|(?:漣ちゃん|ゆき|ゆっきー).+(?:爆破|天気)|ちん[こぽ]|まんこ|精[子液]|ちんちん|うん[こち]|おしっこ|クリトリス|チン[ポコ]|マンコ", "（自主規制）", converted_text)
     return toot_string
 
 
@@ -308,7 +312,7 @@ class MyStreamListener(StreamListener):
         tl_display_name = convert_nick(status['account']['username'], tl_display_name) #ニックネーム
         #メンション用のidとaccount_name取得
         mention_to_id = ''
-        match_acct = re.search(r"^(@v_idol_retia)[\s　](.+)", tl_cont)
+        match_acct = re.search(r"^(@retia_prototype)[\s　](.+)", tl_cont)
 
         if match_acct:
             mention_to_id = status['id']
@@ -453,7 +457,7 @@ class MyUserListener(StreamListener):
         tl_display_name = convert_nick(notification['account']['username'], tl_display_name) #ニックネーム
         #メンション用のidとaccount_name取得
         mention_to_id = ''
-        match_acct = re.search(r"^(@v_idol_retia)[\s　](.+)", tl_cont)
+        match_acct = re.search(r"^(@retia_prototype)[\s　](.+)", tl_cont)
 
         if match_acct:
             mention_to_id = notification['status']['id']
@@ -561,6 +565,7 @@ class HTL():
     def t_home():
         listener = MyUserListener()
         mastodon.stream_user(listener)
+
 
 
 
