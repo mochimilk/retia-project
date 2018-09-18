@@ -49,7 +49,7 @@ def is_bot(app):
 
 #ニックネーム機能
 def convert_nick(u_name, d_name):
-    f = open('/home/hot.uniuni/mstdn-bot/nickname_list.json', 'r', encoding = 'utf-8')
+    f = open('nickname_list.json', 'r', encoding = 'utf-8')
     nick_dict = json.load(f)
     nickname = ''
 
@@ -275,7 +275,7 @@ def retia_tan(converted_text):
 
 # ■■ NGワード
 def convert_ng(converted_text):
-    toot_string = re.sub(r"ぬるぽ|NullPointerException|>>[0-9]+|[0-9]+d[0-9]+|(?:漣ちゃん|ゆき|ゆっきー).+(?:爆破|天気)|ちん[こぽ]|まんこ|精[子液]|ちんちん|うん[こち]|おしっこ|クリトリス|チン[ポコ]|マンコ", "（自主規制）", converted_text)
+    toot_string = re.sub(r"xxxxxxxxx", "（自主規制）", converted_text)
     return toot_string
 
 
@@ -574,7 +574,7 @@ if __name__ == '__main__':
     mastodon = Mastodon(
         client_id="xxxxxxx.txt",
         access_token="xxxxxxxx.txt",
-        api_base_url = "https://mstdn-workers.com"
+        api_base_url = "https://yakumo.tech"
     )
 
 ltl = threading.Thread(target=LTL.t_local, daemon = True)
