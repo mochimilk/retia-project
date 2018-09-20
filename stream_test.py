@@ -316,7 +316,7 @@ class MyStreamListener(StreamListener):
 
         if match_acct:
             mention_to_id = status['id']
-            mention_acct = status['account']['username']
+            mention_acct = status['account']['acct']
         else:
             mention_to_id = ''
             mention_acct = ''
@@ -461,7 +461,7 @@ class MyUserListener(StreamListener):
 
         if match_acct:
             mention_to_id = notification['status']['id']
-            mention_acct = notification['account']['username']
+            mention_acct = notification['account']['acct']
         else:
             mention_to_id = ''
             mention_acct = ''
