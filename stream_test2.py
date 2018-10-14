@@ -123,7 +123,7 @@ def to_kiite(converted_text):
 
 # フォローする機能
 def is_follow(content: str) -> bool:
-    return bool(re.search(r"^(@v_retia[ 　])(フォロー)(して|く[うぅー]*ださ[あぁー]*い|お願[あぁー]*い|おねが[あぁー]*い|頼[むみ]|たの[むみ]|ぷりーず|プリーズ)", content))
+    return bool(re.search(r"^(@v_retia)?(@yakumo.foundation)?[ 　]?(フォロー)(して|く[うぅー]*ださ[あぁー]*い|お願[あぁー]*い|おねが[あぁー]*い|頼[むみ]|たの[むみ]|ぷりーず|プリーズ)", content))
 
 def rr_follow(converted_text, usr_name):
     toot_string = ''
@@ -170,7 +170,7 @@ def oo_kawaii(converted_text, usr_name):
 
 # 〇〇さんえっち
 def is_ecchi(content: str) -> bool:
-    return bool(re.search(r"^(@v_retia[ 　])?(おっぱい.?[も揉](?:む|んで|みた))|(?:一緒|いっしょ)に寝[よて]|れてぃあ(?:たん)?、*(つきあって|付き合って|愛してる|の?えっち|たべたい|食べたい)", content))
+    return bool(re.search(r"^(@v_retia)?(@yakumo.foundation)?[ 　]?(おっぱい.?[も揉](?:む|んで|みた))|(?:一緒|いっしょ)に寝[よて]|れてぃあ(?:たん)?、*(つきあって|付き合って|愛してる|の?えっち|たべたい|食べたい)", content))
 
 def oo_ecchi(converted_text, usr_name):
     toot_string = ''
@@ -185,7 +185,7 @@ def oo_ecchi(converted_text, usr_name):
 
 # 何曜日？
 def is_youbi(content: str) -> bool:
-    return bool(re.search(r"^(@v_retia[ 　])?(?:きょう|今日)(?:は|って)*何曜日", content))
+    return bool(re.search(r"^(@v_retia)?(@yakumo.foundation)?[ 　]?(?:きょう|今日)(?:は|って)*何曜日", content))
 
 def nani_youbi(converted_text):
     toot_string = ''
@@ -204,7 +204,7 @@ def nani_youbi(converted_text):
 
 # れてぃあたんかわいい⇒〇〇さん大好き
 def is_retikawa(content: str) -> bool:
-    return bool(re.search(r"^(@v_retia[ 　])?(れてぃあ(?:たん)?[は]?)(?!(?:かわい|可愛い)くない)(?:かわいい|可愛い|すてき|素敵|美人)(?!？|\?|ない|無い|とでも|、|で[は]?ない)", content))
+    return bool(re.search(r"^(@v_retia)?(@yakumo.foundation)?[ 　]?(れてぃあ(?:たん)?[は]?)(?!(?:かわい|可愛い)くない)(?:かわいい|可愛い|すてき|素敵|美人)(?!？|\?|ない|無い|とでも|、|で[は]?ない)", content))
 
 def retikawa(converted_text, usr_name):
     random.seed()
@@ -222,7 +222,7 @@ def retikawa(converted_text, usr_name):
 
 # れてぃあたんかわいくない⇒怒り
 def is_not_retikawa(content: str) -> bool:
-    return bool(re.search(r"^(@v_retia[ 　])?(れてぃあ(?:たん)?[は]?)(?:(?:かわいく|かわいいく|可愛いく|可愛く|美人|すてき|素敵)[ではじゃ]?ない|ブス|不細工|ブサイク)", content))
+    return bool(re.search(r"^(@v_retia)?(@yakumo.foundation)?[ 　]?(れてぃあ(?:たん)?[は]?)(?:(?:かわいく|かわいいく|可愛いく|可愛く|美人|すてき|素敵)[ではじゃ]?ない|ブス|不細工|ブサイク)", content))
 
 def not_retikawa(converted_text, usr_name):
     random.seed()
@@ -240,7 +240,7 @@ def not_retikawa(converted_text, usr_name):
 
 # ありがとう、大好き
 def is_arigato(content: str) -> bool:
-    return bool(re.search(r"^(@v_retia[ 　])?(れてぃあ(?:たん)?[、]?(?:大好き|ありがと[う]?))", content))
+    return bool(re.search(r"^(@v_retia)?(@yakumo.foundation)?[ 　]?(れてぃあ(?:たん)?[、]?(?:大好き|ありがと[う]?))", content))
 
 def arigato(converted_text, usr_name):
     random.seed()
@@ -258,7 +258,7 @@ def arigato(converted_text, usr_name):
 
 # おすすめ商品
 def is_osusume(content: str) -> bool:
-    return bool(re.search(r"^(@v_retia[ 　])?(おすすめ|オススメ)$", content))
+    return bool(re.search(r"^(@v_retia)?(@yakumo.foundation)?[ 　]?(おすすめ|オススメ)$", content))
 
 def osusume(converted_text):
     random.seed()
