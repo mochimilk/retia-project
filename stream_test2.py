@@ -13,7 +13,7 @@ import traffic
 global mastodon
 
 #たぶんグローバルな変数
-MyUserName = 'retia_prototype' #自分のusername
+MyUserName = 'v_retia' #自分のusername
 tag_cutter = re.compile(r"<[^>]*?>") #htmlタグ許すまじ
 display_name_cutter = re.compile(r"(?:@|#|http.*:\/\/)") #display_nameでのいたずら防止
 tl_list = [] #重複チェック用キャッシュ
@@ -121,6 +121,21 @@ def to_kiite(converted_text):
     return toot_string
 
 
+# フォローする機能
+def is_follow(content: str) -> bool:
+    return bool(re.search(r"^(@v_retia)?(@yakumo.foundation)?[ 　]?(フォロー)(して|く[うぅー]*ださ[あぁー]*い|お願[あぁー]*い|おねが[あぁー]*い|頼[むみ]|たの[むみ]|ぷりーず|プリーズ)", content))
+
+def rr_follow(converted_text, usr_name):
+    toot_string = ''
+    if is_follow(converted_text):
+        print('FollowReq: Follow')
+        toot_string = usr_name + 'フォローするよ☆'
+    else:
+        print('FollowReq: No')
+        toot_string = ''
+    return toot_string
+
+
 # 道路交通情報
 def is_traffic(content: str):
     return re.search(r"れてぃあ(?:たん)?(?:、)?(.+)[の]道路", content)
@@ -155,7 +170,7 @@ def oo_kawaii(converted_text, usr_name):
 
 # 〇〇さんえっち
 def is_ecchi(content: str) -> bool:
-    return bool(re.search(r"(おっぱい.?[も揉](?:む|んで|みた))|(?:一緒|いっしょ)に寝[よて]|れてぃあ(?:たん)?、*(つきあって|付き合って|愛してる|の?えっち|たべたい|食べたい)", content))
+    return bool(re.search(r"^(@v_retia)?(@yakumo.foundation)?[ 　]?(おっぱい.?[も揉](?:む|んで|みた))|(?:一緒|いっしょ)に寝[よて]|れてぃあ(?:たん)?、*(つきあって|付き合って|愛してる|の?えっち|たべたい|食べたい)", content))
 
 def oo_ecchi(converted_text, usr_name):
     toot_string = ''
@@ -170,7 +185,7 @@ def oo_ecchi(converted_text, usr_name):
 
 # 何曜日？
 def is_youbi(content: str) -> bool:
-    return bool(re.search(r"(?:きょう|今日)(?:は|って)*何曜日", content))
+    return bool(re.search(r"^(@v_retia)?(@yakumo.foundation)?[ 　]?(?:きょう|今日)(?:は|って)*何曜日", content))
 
 def nani_youbi(converted_text):
     toot_string = ''
@@ -189,7 +204,7 @@ def nani_youbi(converted_text):
 
 # れてぃあたんかわいい⇒〇〇さん大好き
 def is_retikawa(content: str) -> bool:
-    return bool(re.search(r"(れてぃあ(?:たん)?[は]?)(?!(?:かわい|可愛い)くない)(?:かわいい|可愛い|すてき|素敵|美人)(?!？|\?|ない|無い|とでも|、|で[は]?ない)", content))
+    return bool(re.search(r"^(@v_retia)?(@yakumo.foundation)?[ 　]?(れてぃあ(?:たん)?[は]?)(?!(?:かわい|可愛い)くない)(?:かわいい|可愛い|すてき|素敵|美人)(?!？|\?|ない|無い|とでも|、|で[は]?ない)", content))
 
 def retikawa(converted_text, usr_name):
     random.seed()
@@ -207,7 +222,7 @@ def retikawa(converted_text, usr_name):
 
 # れてぃあたんかわいくない⇒怒り
 def is_not_retikawa(content: str) -> bool:
-    return bool(re.search(r"(れてぃあ(?:たん)?[は]?)(?:(?:かわいく|かわいいく|可愛いく|可愛く|美人|すてき|素敵)[ではじゃ]?ない|ブス|不細工|ブサイク)", content))
+    return bool(re.search(r"^(@v_retia)?(@yakumo.foundation)?[ 　]?(れてぃあ(?:たん)?[は]?)(?:(?:かわいく|かわいいく|可愛いく|可愛く|美人|すてき|素敵)[ではじゃ]?ない|ブス|不細工|ブサイク)", content))
 
 def not_retikawa(converted_text, usr_name):
     random.seed()
@@ -225,7 +240,7 @@ def not_retikawa(converted_text, usr_name):
 
 # ありがとう、大好き
 def is_arigato(content: str) -> bool:
-    return bool(re.search(r"(れてぃあ(?:たん)?[、]?(?:大好き|ありがと[う]?))", content))
+    return bool(re.search(r"^(@v_retia)?(@yakumo.foundation)?[ 　]?(れてぃあ(?:たん)?[、]?(?:大好き|ありがと[う]?))", content))
 
 def arigato(converted_text, usr_name):
     random.seed()
@@ -243,7 +258,7 @@ def arigato(converted_text, usr_name):
 
 # おすすめ商品
 def is_osusume(content: str) -> bool:
-    return bool(re.search(r"^(@retia_prototype )?(おすすめ|オススメ)$", content))
+    return bool(re.search(r"^(@v_retia)?(@yakumo.foundation)?[ 　]?(おすすめ|オススメ)$", content))
 
 def osusume(converted_text):
     random.seed()
@@ -279,18 +294,6 @@ def convert_ng(converted_text):
     return toot_string
 
 
-# ■■ タイマーのテスト
-def timer(ti):
-    d_timer = 1
-    while True:
-        time.sleep(1)
-        #print(d_timer)
-        d_timer = d_timer + 1
-        if d_timer > ti:
-            d_timer = 0
-            print('* DUPLICATE_TOOT_RESET *')
-
-
 # ■■■■■■■■ ローカルタイムラインのストリーム取得
 class MyStreamListener(StreamListener):
     def __init__(self):
@@ -306,107 +309,6 @@ class MyStreamListener(StreamListener):
 
 
     def on_update(self, status):
-        toot_visibl = 'public'
-        tl_cont = tag_cutter.sub("", status['content'])
-        tl_display_name = display_name_cutter.sub("☆", status['account']['display_name'])
-        tl_display_name = convert_nick(status['account']['username'], tl_display_name) #ニックネーム
-        #メンション用のidとaccount_name取得
-        mention_to_id = ''
-        match_acct = re.search(r"^(@retia_prototype)[\s　](.+)", tl_cont)
-
-        if match_acct:
-            mention_to_id = status['id']
-            mention_acct = status['account']['acct']
-        else:
-            mention_to_id = ''
-            mention_acct = ''
-
-        #重複チェック用自分の投稿キャッシュ
-        if status['account']['username'] == MyUserName:
-            tl_cont = tl_cont.replace('　#れてぃあたん','')
-            tl_list.append(tl_cont)
-            if len(tl_list) > dupli_count:
-                tl_list.pop(0)
-
-        #タイムライン表示
-        print("{},{:%Y-%m-%d %H:%M:%S}/{}/{}/{}".format(
-            'UPDATE_LOCAL',
-            status['created_at'],
-            mention_to_id,
-            tl_display_name,
-            tl_cont
-            )
-        )
-
-        #トゥー内容初期化
-        my_next_toot = ''
-        spo_text = ''
-
-        #トゥー生成
-        if is_bot(status['application']): #botリストに入っているなら反応しない
-            my_next_toot = ''
-        elif status['spoiler_text'] != '': #CWなら反応しない
-            my_next_toot = ''
-        elif babu_haibu(tl_cont) != '': #バ部は廃部
-            my_next_toot = babu_haibu(tl_cont)
-            #mention_to_id = status['id']
-        elif oo_kawaii(tl_cont, tl_display_name) != '': #〇〇さんかわいい
-            my_next_toot = oo_kawaii(tl_cont, tl_display_name)
-            #mention_to_id = status['id']
-        elif oo_ecchi(tl_cont, tl_display_name) != '': #〇〇さんえっち
-            my_next_toot = oo_ecchi(tl_cont, tl_display_name)
-            #mention_to_id = status['id']
-        elif nani_youbi(tl_cont) != '': #何曜日
-            my_next_toot = nani_youbi(tl_cont)
-        elif to_kiite(tl_cont) != '': #〇〇と聞いて
-            my_next_toot = to_kiite(tl_cont)
-            #mention_to_id = status['id']
-        elif is_traffic(tl_cont): #道路交通情報
-            spo_text, my_next_toot = info_traffic(tl_cont)
-            if my_next_toot != '':
-                my_next_toot = '@' + status['account']['username'] + ' ' + my_next_toot
-                toot_visibl = 'unlisted'
-                mention_to_id = status['id']
-        elif arigato(tl_cont, tl_display_name) != '': #ありがと
-            my_next_toot = arigato(tl_cont, tl_display_name)
-        elif osusume(tl_cont) != '': #おすすめ
-            my_next_toot = osusume(tl_cont)
-        elif retikawa(tl_cont, tl_display_name) != '': #れてぃあたんかわいい
-            my_next_toot = retikawa(tl_cont, tl_display_name)
-        elif not_retikawa(tl_cont, tl_display_name) != '': #れてぃあたん可愛くない
-            my_next_toot = not_retikawa(tl_cont, tl_display_name)
-        elif mention_to_id != '': #LTLに表示されるメンションに対する反応
-            if retia_mention(tl_cont, tl_display_name, '') != '':
-                my_next_toot = '@' + mention_acct + ' ' + retia_mention(tl_cont, tl_display_name, '')
-        elif retia_tan(tl_cont) != '': #れてぃあたんを呼んだ場合
-            my_next_toot = retia_tan(tl_cont)
-
-        #500文字超えそうなときの処理
-        if len(my_next_toot) > 430:
-            my_next_list = [my_next_toot[i: i+430] for i in range(0, len(my_next_toot), 430)]
-            my_next_toot = my_next_list[0] + '文字数'
-
-        #NGワードは処理する
-        my_next_toot = convert_ng(my_next_toot)
-
-        #生成した内容が過去トゥーと一致したらトゥーしない
-        #何も生成してない場合もトゥーしない
-        print('Next:', my_next_toot)
-        print('PASTCK:', toot_check(my_next_toot, tl_list, 3))
-        if toot_check(my_next_toot, tl_list, 3):
-            print('TOOT: ERR: 重複')
-            my_next_toot = ''
-        elif my_next_toot == '':
-            print('TOOT: No Toot.')
-            #my_next_toot = ''
-        else:
-            print('TOOT: Toot OK.', mention_to_id, '/', mention_acct)
-            mastodon.status_post(
-                status = my_next_toot + '　#れてぃあたん',
-                in_reply_to_id = mention_to_id,
-                visibility = toot_visibl,
-                spoiler_text = spo_text
-            )
         pass
 
 
@@ -439,19 +341,125 @@ class MyUserListener(StreamListener):
 
 
     def on_update(self, status):
+        toot_visibl = 'unlisted'
+        tl_cont = tag_cutter.sub("", status['content'])
+        tl_display_name = display_name_cutter.sub("☆", status['account']['display_name'])
+        tl_display_name = convert_nick(status['account']['username'], tl_display_name) #ニックネーム
+        #メンション用のidとaccount_name取得
+        mention_to_id = status['id']
+        mention_acct = status['account']['acct']
+
+        """
+        mention_to_id = ''
+        match_acct = re.search(r"^(@v_retia)[\s　](.+)", tl_cont)
+
+        if match_acct:
+            mention_to_id = status['id']
+            mention_acct = status['account']['acct']
+        else:
+            mention_to_id = ''
+            mention_acct = ''
+        """
+
+        #重複チェック用自分の投稿キャッシュ
+        if status['account']['username'] == MyUserName:
+            tl_cont = tl_cont.replace('　#れてぃあたん','')
+            tl_list.append(tl_cont)
+            if len(tl_list) > dupli_count:
+                tl_list.pop(0)
+
         #タイムライン表示
-        print("{},{:%Y-%m-%d %H:%M:%S}/{}/{}".format(
+        print("{},{:%Y-%m-%d %H:%M:%S}/mID:{}/inRepID:{}/{}/{}".format(
             'UPDATE_HOME',
             status['created_at'],
-            status['account']['display_name'],
-            tag_cutter.sub("", status['content'])
+            mention_to_id,
+            status['in_reply_to_id'],
+            tl_display_name,
+            tl_cont
             )
         )
+
+        #トゥー内容初期化
+        my_next_toot = ''
+        spo_text = ''
+
+        #トゥー生成
+        if status['in_reply_to_id'] != None: #トゥートに対するメンションは反応しない
+            pass
+        elif is_bot(status['application']): #botリストに入っているなら反応しない
+            my_next_toot = ''
+        elif status['spoiler_text'] != '': #CWなら反応しない
+            my_next_toot = ''
+        elif babu_haibu(tl_cont) != '': #バ部は廃部
+            my_next_toot = babu_haibu(tl_cont)
+            #mention_to_id = status['id']
+        elif oo_kawaii(tl_cont, tl_display_name) != '': #〇〇さんかわいい
+            my_next_toot = '@' + mention_acct + ' ' + oo_kawaii(tl_cont, tl_display_name)
+            mention_to_id = status['id']
+        elif oo_ecchi(tl_cont, tl_display_name) != '': #〇〇さんえっち
+            my_next_toot = '@' + mention_acct + ' ' + oo_ecchi(tl_cont, tl_display_name)
+            mention_to_id = status['id']
+        elif nani_youbi(tl_cont) != '': #何曜日
+            my_next_toot = nani_youbi(tl_cont)
+        elif to_kiite(tl_cont) != '': #〇〇と聞いて
+            my_next_toot = to_kiite(tl_cont)
+            #mention_to_id = status['id']
+        elif is_traffic(tl_cont): #道路交通情報
+            spo_text, my_next_toot = info_traffic(tl_cont)
+            if my_next_toot != '':
+                my_next_toot = '@' + mention_acct + ' ' + my_next_toot
+                toot_visibl = 'unlisted'
+                mention_to_id = status['id']
+        elif arigato(tl_cont, tl_display_name) != '': #ありがと
+            my_next_toot = '@' + mention_acct + ' ' + arigato(tl_cont, tl_display_name)
+            mention_to_id = status['id']
+        elif osusume(tl_cont) != '': #おすすめ
+            my_next_toot = '@' + mention_acct + ' ' + osusume(tl_cont)
+            mention_to_id = status['id']
+        elif retikawa(tl_cont, tl_display_name) != '': #れてぃあたんかわいい
+            my_next_toot = '@' + mention_acct + ' ' + retikawa(tl_cont, tl_display_name)
+            mention_to_id = status['id']
+        elif not_retikawa(tl_cont, tl_display_name) != '': #れてぃあたん可愛くない
+            my_next_toot = '@' + mention_acct + ' ' + not_retikawa(tl_cont, tl_display_name)
+            mention_to_id = status['id']
+        elif retia_tan(tl_cont) != '': #れてぃあたんを呼んだ場合
+            my_next_toot = retia_tan(tl_cont)
+        elif mention_to_id != '': #HTLに表示されるメンションに対する反応
+            if retia_mention(tl_cont, tl_display_name, '') != '':
+                my_next_toot = '@' + mention_acct + ' ' + retia_mention(tl_cont, tl_display_name, '')
+
+        #500文字超えそうなときの処理
+        if len(my_next_toot) > 430:
+            my_next_list = [my_next_toot[i: i+430] for i in range(0, len(my_next_toot), 430)]
+            my_next_toot = my_next_list[0] + '文字数'
+
+        #NGワードは処理する
+        my_next_toot = convert_ng(my_next_toot)
+
+        #生成した内容が過去トゥーと一致したらトゥーしない
+        #何も生成してない場合もトゥーしない
+        print('Next:', my_next_toot)
+        print('PASTCK:', toot_check(my_next_toot, tl_list, 3))
+        if toot_check(my_next_toot, tl_list, 3):
+            print('TOOT: ERR: 重複')
+            my_next_toot = ''
+        elif my_next_toot == '':
+            print('TOOT: No Toot.')
+            #my_next_toot = ''
+        else:
+            print('TOOT: Toot OK.', mention_to_id, '/', mention_acct)
+            mastodon.status_post(
+                status = my_next_toot + '　#れてぃあたん',
+                in_reply_to_id = mention_to_id,
+                visibility = toot_visibl,
+                spoiler_text = spo_text
+            )
         pass
 
 
+#■■通知タイムライン処理
     def on_notification(self, notification):
-        toot_visibl = 'public'
+        toot_visibl = 'unlisted'
         tl_cont = tag_cutter.sub("", notification['status']['content'])
         tl_display_name = display_name_cutter.sub("☆", notification['account']['display_name'])
         tl_display_name = convert_nick(notification['account']['username'], tl_display_name) #ニックネーム
@@ -574,7 +582,7 @@ if __name__ == '__main__':
     mastodon = Mastodon(
         client_id="xxxxxxx.txt",
         access_token="xxxxxxxx.txt",
-        api_base_url = "https://yakumo.tech"
+        api_base_url = "https://yakumo.foundation/"
     )
 
 ltl = threading.Thread(target=LTL.t_local, daemon = True)
