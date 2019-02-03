@@ -345,6 +345,8 @@ class MyUserListener(StreamListener):
         tl_cont = tag_cutter.sub("", status['content'])
         tl_display_name = display_name_cutter.sub("☆", status['account']['display_name'])
         tl_display_name = convert_nick(status['account']['username'], tl_display_name) #ニックネーム
+        #toot_app = status['application']
+
         #メンション用のidとaccount_name取得
         mention_to_id = status['id']
         mention_acct = status['account']['acct']
@@ -386,8 +388,8 @@ class MyUserListener(StreamListener):
         #トゥー生成
         if status['in_reply_to_id'] != None: #トゥートに対するメンションは反応しない
             pass
-        elif is_bot(status['application']): #botリストに入っているなら反応しない
-            my_next_toot = ''
+        #elif is_bot(toot_app): #botリストに入っているなら反応しない
+        #    my_next_toot = ''
         elif status['spoiler_text'] != '': #CWなら反応しない
             my_next_toot = ''
         elif babu_haibu(tl_cont) != '': #バ部は廃部
@@ -428,6 +430,7 @@ class MyUserListener(StreamListener):
             if retia_mention(tl_cont, tl_display_name, '') != '':
                 my_next_toot = '@' + mention_acct + ' ' + retia_mention(tl_cont, tl_display_name, '')
 
+
         #500文字超えそうなときの処理
         if len(my_next_toot) > 430:
             my_next_list = [my_next_toot[i: i+430] for i in range(0, len(my_next_toot), 430)]
@@ -465,7 +468,9 @@ class MyUserListener(StreamListener):
         tl_display_name = convert_nick(notification['account']['username'], tl_display_name) #ニックネーム
         #メンション用のidとaccount_name取得
         mention_to_id = ''
-        match_acct = re.search(r"^(@retia_prototype)[\s　](.+)", tl_cont)
+        match_acct = re.search(r"^(@v_retia)(.+)", tl_cont)
+
+        #toot_app = notification['status']['application']
 
         if match_acct:
             mention_to_id = notification['status']['id']
@@ -498,8 +503,8 @@ class MyUserListener(StreamListener):
         #トゥー生成
         if notification['type'] != 'mention': #メンション以外の通知は何もしない
             pass
-        elif is_bot(notification['status']['application']): #botリストに入っているなら反応しない
-            my_next_toot = ''
+        #elif is_bot(toot_app): #botリストに入っているなら反応しない
+        #    my_next_toot = ''
         elif notification['status']['spoiler_text'] != '': #CWなら反応しない
             my_next_toot = ''
         elif babu_haibu(tl_cont) != '': #バ部は廃部
@@ -515,6 +520,10 @@ class MyUserListener(StreamListener):
         elif is_traffic(tl_cont): #道路交通情報
             spo_text, my_next_toot = info_traffic(tl_cont)
             toot_visibl = 'unlisted'
+        elif is_follow(tl_cont): #フォローする機能
+            my_next_toot = rr_follow(tl_cont, tl_display_name)
+            toot_visibl = 'unlisted'
+            mastodon.account_follow(notification['account']['id'])
         elif arigato(tl_cont, tl_display_name) != '': #ありがと
             my_next_toot = arigato(tl_cont, tl_display_name)
         elif osusume(tl_cont) != '': #おすすめ
