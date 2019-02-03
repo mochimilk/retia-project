@@ -387,7 +387,9 @@ class MyUserListener(StreamListener):
 
         #トゥー生成
         if status['in_reply_to_id'] != None: #トゥートに対するメンションは反応しない
-            pass
+            my_next_toot = ''
+        elif status['account']['username'] == MyUserName: #自分に反応しない
+            my_next_toot = ''
         #elif is_bot(toot_app): #botリストに入っているなら反応しない
         #    my_next_toot = ''
         elif status['spoiler_text'] != '': #CWなら反応しない
@@ -499,10 +501,12 @@ class MyUserListener(StreamListener):
         #トゥー内容初期化
         my_next_toot = ''
         spo_text = ''
-
+        
         #トゥー生成
         if notification['type'] != 'mention': #メンション以外の通知は何もしない
-            pass
+            my_next_toot = ''
+        elif notification['account']['username'] == MyUserName: #自分に反応しない
+            my_next_toot = ''
         #elif is_bot(toot_app): #botリストに入っているなら反応しない
         #    my_next_toot = ''
         elif notification['status']['spoiler_text'] != '': #CWなら反応しない
