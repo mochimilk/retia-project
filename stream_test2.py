@@ -107,7 +107,7 @@ def babu_haibu(converted_text):
 
 # 〇〇と聞いて
 def is_kiite(content: str):
-    return re.search(r"ダーツ|カラオケ|[女男]装|((?:奢|おご)[りる])|(?<!オーダー|カスタム)メイド|お(?:ねえ|姉|ねー)ちゃん|(?:可愛い|かわいい|カワイイ)[女男]の[子娘]|彼[女氏][ぁ-んァ-ン０-９0-9人金円万画像、。]*?[ほ欲]しい|ニーソ|ニーハイ", content)
+    return re.search(r"ダーツ|カラオケ|[女男]装|((?:奢|おご)[りる])|(?<!オーダー|カスタム)メイド|お(?:ねえ|姉|ねー)ちゃん|(?:可愛い|かわいい|カワイイ)[女男]の[子娘]|彼[女氏][ぁ-んァ-ン０-９0-9人金円万画像、。]*?[ほ欲]しい|ニーソ|ニーハイ|奈良|(?:ビール|やきにく|焼肉|寿司|ラーメン|羊|お粥)[食た飲の]*?(?:べたい|みたい)", content)
 
 def to_kiite(converted_text):
     toot_string = ''
@@ -348,8 +348,12 @@ class MyUserListener(StreamListener):
         #toot_app = status['application']
 
         #メンション用のidとaccount_name取得
-        mention_to_id = status['id']
+        if status['reblog'] == None:
+            mention_to_id = status['id']
+        else: #ブーストならメンションしない
+            mention_to_id = ''
         mention_acct = status['account']['acct']
+
 
         """
         mention_to_id = ''
