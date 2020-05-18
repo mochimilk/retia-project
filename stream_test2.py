@@ -107,7 +107,7 @@ def babu_haibu(converted_text):
 
 # 〇〇と聞いて
 def is_kiite(content: str):
-    return re.search(r"ダーツ|カラオケ|[女男]装|((?:奢|おご)[りる])|(?<!オーダー|カスタム)メイド|お(?:ねえ|姉|ねー)ちゃん|(?:可愛い|かわいい|カワイイ)[女男]の[子娘]|彼[女氏][ぁ-んァ-ン０-９0-9人金円万画像、。]*?[ほ欲]しい|ニーソ|ニーハイ|奈良|(?:ビール|やきにく|焼肉|寿司|ラーメン|羊|お粥)[食た飲の]*?(?:べたい|みたい)", content)
+    return re.search(r"ダーツ|カラオケ|[女男]装|((?:奢|おご)[りる])|(?<!オーダー|カスタム)メイド|お(?:ねえ|姉|ねー)ちゃん|(?:可愛い|かわいい|カワイイ)[女男]の[子娘]|彼[女氏][ぁ-んァ-ン０-９0-9人金円万画像、。]*?[ほ欲]しい|ニーソ|ニーハイ|奈良|(?:ビール|焼肉|寿司|ラーメン|羊|お粥)[食た飲の]*?(?:べたい|みたい)", content)
 
 def to_kiite(converted_text):
     toot_string = ''
@@ -138,7 +138,7 @@ def rr_follow(converted_text, usr_name):
 
 # 道路交通情報
 def is_traffic(content: str):
-    return re.search(r"れてぃあ(?:たん)?(?:、)?(.+)[の]道路", content)
+    return re.search(r"^(@v_retia)?(@yakumo.foundation)?[ 　]?(.+)[の]道路", content)
 
 def info_traffic(converted_text):
     time.sleep(1)
@@ -146,7 +146,7 @@ def info_traffic(converted_text):
     toot_string = ''
     tr = is_traffic(converted_text)
     if tr:
-        tr_tx = tr.group(1)
+        tr_tx = tr.group(3)
         print('TRAFFIC:', tr_tx)
         toot_spo_string, toot_string = traffic.get_traffic(tr_tx, 2)
 
