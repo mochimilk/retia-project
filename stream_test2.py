@@ -137,6 +137,7 @@ def rr_follow(converted_text, usr_name):
 
 
 # 道路交通情報
+# 2020/12/01 Cannot use it.
 def is_traffic(content: str):
     return re.search(r"^(@v_retia)?(@yakumo.foundation)?[ 　]?(.+)[の]道路", content)
 
